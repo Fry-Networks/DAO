@@ -4,8 +4,10 @@ import clientPromise from '../lib/mongoclient';
 import { useState } from 'react';
 import ModalVote from '../components/vote';
 import { Dialog } from '@tremor/react';
+import { useWallet } from '@txnlab/use-wallet';
 const colors = ["green", "blue", "yellow", "amber", "purple"] as const;
 export default function VotePage({ vote_data }: { vote_data: Vote }) {
+  const { providers, activeAccount } = useWallet()
   const [openModalId, setOpenModalId] = useState(null as number | null);
   const handleCloseModal = (index: number) => {
     setOpenModalId(null);
@@ -18,6 +20,7 @@ export default function VotePage({ vote_data }: { vote_data: Vote }) {
         <Divider />
         <Flex className="grid grid-cols-2 gap-4">
           {
+            activeAccount ? 
             vote_data.votes.map((vote, index) => (
               <Card key={index}>
                 <Flex flexDirection='col' justifyContent='center' alignItems='center'>
@@ -29,7 +32,7 @@ export default function VotePage({ vote_data }: { vote_data: Vote }) {
                     setIsOpen={handleCloseModal} vote={{ index: index, title: vote.title, description: vote.description }} />
                 </Flex>
               </Card>
-            ))
+            )) : <p style={{marginTop: "15px"}}>You need to connect your wallet to vote!</p>
           }
         </Flex>
       </Flex>

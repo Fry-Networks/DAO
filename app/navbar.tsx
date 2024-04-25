@@ -27,7 +27,8 @@ export default function Navbar() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex h-16 justify-between">
               <div className="flex">
-                <div className="flex flex-shrink-0 items-center">
+                <button onClick={() => { window.location.href = '/' }}>
+              <div className="flex flex-shrink-0 items-center">
                   <svg
                     width="32"
                     height="32"
@@ -50,6 +51,7 @@ export default function Navbar() {
                     />
                   </svg>
                 </div>
+                </button>
                 <div className="hidden sm:-my-px sm:ml-6 sm:flex sm:space-x-8">
                   {navigation.map((item) => (
                     <a
