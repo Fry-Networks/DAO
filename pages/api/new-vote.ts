@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const session = await getServerSession(req, res, authOptions);
     // Check if user is authenticated
-    if ((!session || !session.user.admin ) && process.env.NODE_ENV === "production") {
+    if ((!session) && process.env.NODE_ENV === "production") {
         res.status(401).json({ message: "Unauthorized" });
         return;
     }
