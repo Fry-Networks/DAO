@@ -10,6 +10,7 @@ const colors = ["green", "blue", "yellow", "pink", "purple"] as const;
 export default function LastVotePage({ vote_data }: { vote_data: Vote | null }) {
     const totalVotes = vote_data?.votes.reduce((acc, vote) => acc + vote.votes, 0);
     const winnerVote = vote_data?.votes.reduce((prev, current) => (prev.votes > current.votes) ? prev : current);
+    console.log(typeof vote_data?.createdAt)
     return (
         <main className="p-4 md:p-10 mx-auto max-w-7xl">
             {vote_data !== null ? (
@@ -17,6 +18,13 @@ export default function LastVotePage({ vote_data }: { vote_data: Vote | null }) 
 
                     <Title>{vote_data.title}</Title>
                     <p className="mb-10">{vote_data.description}</p>
+                    <span>
+                        Started on {new Date(vote_data.createdAt).toLocaleString()} UTC
+                    </span>
+                    <span>
+                        Closed on {new Date(vote_data.end_date).toLocaleString()} UTC
+                    </span>
+
                     <Divider />
                     <Flex className="grid grid-cols-2 gap-4">
 
@@ -51,7 +59,12 @@ export async function getServerSideProps(context: any) {
         const client = await clientPromise;
         const db = client.db('main');
 
-        const vote = (await db.collection('dao').find({ current: false, deleted: false, hadVotes: true }).sort({ createdAt: -1 }).limit(1).toArray())[0]
+        const vote = (await db.collection('dao').find({
+            current: false, deleted: {
+                $ne: true
+
+            }, hadVotes: true
+        }).sort({ createdAt: -1 }).limit(1).toArray())[0]
         if (!vote) {
             return {
                 props: { vote_data: null }
@@ -60,6 +73,8 @@ export async function getServerSideProps(context: any) {
         const data = {
             title: vote.title,
             description: vote.description,
+            createdAt: vote.createdAt,
+            end_date: vote.end_date,
             votes: vote.votes.map((vote: any) => {
                 return {
                     title: vote.title,
@@ -70,7 +85,7 @@ export async function getServerSideProps(context: any) {
             )
         }
         return {
-            props: { vote_data: data }
+            props: { vote_data: JSON.parse(JSON.stringify(data)) }
         };
     } catch (e) {
         console.error(e);

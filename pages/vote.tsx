@@ -82,7 +82,7 @@ export async function getServerSideProps(context: any) {
         )
       }
       return {
-        props: { vote_data: data }
+        props: { vote_data: JSON.parse(JSON.stringify(data)) }
       };
     }
 
