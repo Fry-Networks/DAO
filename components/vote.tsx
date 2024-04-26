@@ -62,7 +62,8 @@ export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean
         console.log(txId)
         if (txId) {
             setUpdateSuccess('Successfully sent transaction. Your vote will be verified soon.')
-            const response = await fetch('/api/update-multiplier', { // Replace with your actual API endpoint
+            setTimeout(() => setUpdateSuccess(""), 3000);
+            const response = await fetch('/api/new-vote', { // Replace with your actual API endpoint
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -72,6 +73,7 @@ export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean
 
             if (!response.ok) {
                 setUpdateSuccess("error"); // Reset success state
+                setTimeout(() => setUpdateSuccess(""), 3000);
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
         } else {
@@ -106,8 +108,8 @@ export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean
                 </Callout>
             )}
             {(updateSuccess == "error") && (
-                <Callout className="mt-4" title="Error" icon={CheckCircleIcon} color="red">
-                    Error sending transaction. Please try again.
+                <Callout className="mt-4 mb-4" title="Error" icon={CheckCircleIcon} color="red">
+                    Error sending transaction. Please contact us before trying again !!
                 </Callout>
             )}
             <form action="#" method="POST">

@@ -15,7 +15,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const session = await getServerSession(req, res, authOptions);
     // Check if user is authenticated
-    if (!session || !session.user.admin) {
+    if ((!session || !session.user.admin ) && process.env.NODE_ENV === "production") {
         res.status(401).json({ message: "Unauthorized" });
         return;
     }
@@ -30,22 +30,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         let retries = 0;
         console.log("Checking transaction info for txId: ", txId);
         let transactionInfo = await algodClient.pendingTransactionInformation(txId).do();
-        while (!transactionInfo.confirmedRound && retries < 5) {
+        while (!transactionInfo['confirmed-round'] && retries < 5) {
             await new Promise((resolve) => setTimeout(resolve, 5000));
             console.log("Retrying transaction info...");
             transactionInfo = await algodClient.pendingTransactionInformation(txId).do();
+            console.log(transactionInfo);
             retries++;
         }
-        if (!transactionInfo.confirmedRound) {
+        if (!transactionInfo['confirmed-round']) {
             throw new Error("Transaction not confirmed");
         }
-        console.log("Transaction confirmed in round: ", transactionInfo.confirmedRound);
+        console.log("Transaction confirmed in round: ", transactionInfo['confirmed-round']);
         const note = Buffer.from(transactionInfo.txn.txn.note).toString();
         const voteIndex = note.split("-")[0];
         if (parseInt(voteIndex) !== index) {
             throw new Error("Invalid vote index");
         }
-        const assetAmount = transactionInfo.txn.txn.amt;
+        const assetAmount = transactionInfo.txn.txn.aamt;
         const votes = assetAmount / 1e6;
         const client = await clientPromise;
         const db = client.db();
@@ -54,13 +55,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!currentVote) {
             throw new Error("No active vote found");
         }
-        const newUser = currentVote.votes[index].different_people.indexOf(session.user.email) === -1;
+        const sender = algosdk.encodeAddress(transactionInfo.txn.txn.snd);
+        console.log("Sender: ", sender);
+
+        const newUser = currentVote.votes[index].different_people.indexOf(sender) === -1;
         if (newUser) {
             await collection.updateOne(
                 { _id: currentVote._id, "votes.option": index.toString() },
                 {
                     $inc: { "votes.$.votes": votes },
-                    $push: { "votes.$.different_people": transactionInfo.txn.txn.sender }
+                    $push: { "votes.$.different_people": sender }
                 }
             );
         } else {
