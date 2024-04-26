@@ -56,7 +56,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (newUser) {
             await collection.updateOne(
                 { _id: currentVote._id, "votes.option": index.toString() },
-                {
+                {   
+                    $set: { "hadVotes": true },
                     $inc: { "votes.$.votes": votes },
                     $push: { "votes.$.different_people": sender }
                 }
@@ -65,6 +66,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             await collection.updateOne(
                 { _id: currentVote._id, "votes.option": index.toString() },
                 {
+                    $set: { "hadVotes": true },
                     $inc: { "votes.$.votes": votes }
                 }
             );

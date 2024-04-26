@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 export interface Vote extends mongoose.Document {
     end_date: string;
     total_votes: number;
+    hadVotes: boolean;
     createdAt: string;
     deleted: boolean;
     current: boolean
@@ -22,6 +23,7 @@ export interface Vote extends mongoose.Document {
 export const voteSchema = new mongoose.Schema({
     end_date: Date,
     total_votes: { type: Number, default: 0},
+    hadVotes: { type: Boolean, default: false },
     createdAt: { type: String, default: Date.now },
     deleted: { type: Boolean, default: false },
     current: { type: Boolean, default: false },

@@ -41,7 +41,7 @@ export default function LastVotePage({ vote_data }: { vote_data: Vote | null }) 
                     </Flex>
 
                 </Flex>
-            ) : <p>No active vote found</p>}
+            ) : <p>No vote found</p>}
         </main>
     );
 }
@@ -51,7 +51,7 @@ export async function getServerSideProps(context: any) {
         const client = await clientPromise;
         const db = client.db('main');
 
-        const vote = (await db.collection('dao').find({ current: false }).sort({ createdAt: -1 }).limit(1).toArray())[0]
+        const vote = (await db.collection('dao').find({ current: false, deleted: false, hadVotes: true }).sort({ createdAt: -1 }).limit(1).toArray())[0]
         if (!vote) {
             return {
                 props: { vote_data: null }
