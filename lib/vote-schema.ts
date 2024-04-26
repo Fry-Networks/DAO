@@ -15,7 +15,7 @@ export interface Vote extends mongoose.Document {
             description: string;
             title: string;
             votes: number;
-            different_people: number;
+            different_people: string[];
         }
     ]
     }
@@ -34,7 +34,7 @@ export const voteSchema = new mongoose.Schema({
             description: String,
             title: String,
             votes: { type: Number, default: 0},
-            different_people: { type: Number, default: 0}
+            different_people: { type: [String], default: []}
         }
     ]
 });

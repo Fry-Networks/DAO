@@ -4,6 +4,7 @@ import {
     Textarea,
     DatePicker,
     NumberInput,
+    Callout,
 
 
 } from '@tremor/react';
@@ -12,47 +13,70 @@ import algosdk from 'algosdk'
 import { Dialog, DialogPanel, Divider, TextInput } from '@tremor/react';
 import { RiCloseLine } from '@remixicon/react';
 import { useWallet } from '@txnlab/use-wallet';
+import { set } from 'mongoose';
+import { CheckCircleIcon } from '@heroicons/react/24/outline';
 const algodClient = new algosdk.Algodv2(
     "",
     "https://mainnet-api.algonode.cloud",
     ""
-  );
+);
 const BURN_ADDRESS = 'MO3FUXGKGZRTVYOSCXR3FXMPZQCZHR2BGGT2B5SINVBA3W6YCZNO25GGLM';
 const FRYIndex = 924268058;
-export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean, setIsOpen: Function, vote: { index: number, title: string, description:string } }) {
+export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean, setIsOpen: Function, vote: { index: number, title: string, description: string } }) {
     const { activeAddress, signTransactions, sendTransactions } = useWallet()
+    const [updateSuccess, setUpdateSuccess] = useState("");
     const sendTransaction = async (from?: string, to?: string, amount?: number) => {
         try {
-          if (!from || !to || !amount) {
-            throw new Error('Missing transaction params.')
-          }
-    
-          const suggestedParams = await algodClient.getTransactionParams().do()
-    
-          const transaction = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-            from,
-            to,
-            amount,
-            assetIndex: FRYIndex,
-            suggestedParams
-          })
-    
-          const encodedTransaction = algosdk.encodeUnsignedTransaction(transaction)
-          const signedTransactions = await signTransactions([encodedTransaction])
-          const waitRoundsToConfirm = 4
-          const { id } = await sendTransactions(signedTransactions, waitRoundsToConfirm)
-    
-          console.log('Successfully sent transaction. Transaction ID: ', id)
+            if (!from || !to || !amount) {
+                throw new Error('Missing transaction params.')
+            }
+
+            const suggestedParams = await algodClient.getTransactionParams().do()
+
+            const transaction = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
+                from,
+                to,
+                amount,
+                note: new Uint8Array(Buffer.from(vote.index + '-Vote for ' + vote.title)),
+                assetIndex: FRYIndex,
+                suggestedParams
+            })
+
+            const encodedTransaction = algosdk.encodeUnsignedTransaction(transaction)
+            const signedTransactions = await signTransactions([encodedTransaction])
+            const waitRoundsToConfirm = 4
+            const { id } = await sendTransactions(signedTransactions, waitRoundsToConfirm)
+            console.log('Successfully sent transaction. Transaction ID: ', id)
+            return id
+
         } catch (error) {
-          console.error(error)
+            console.error(error)
         }
-      }
+    }
     const [voteValue, setVoteValue] = useState(1);
 
-    const handleVote = (index: number, value: number) => {
-        
+    const handleVote = async (index: number, value: number) => {
+
         console.log(`Voted ${value} votes for ${vote.title}`);
-        sendTransaction(activeAddress, BURN_ADDRESS, value*1e6);
+        const txId = await sendTransaction(activeAddress, BURN_ADDRESS, value * 1e6);
+        console.log(txId)
+        if (txId) {
+            setUpdateSuccess('Successfully sent transaction. Your vote will be verified soon.')
+            const response = await fetch('/api/update-multiplier', { // Replace with your actual API endpoint
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ index, txId }),
+            });
+
+            if (!response.ok) {
+                setUpdateSuccess("error"); // Reset success state
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+        } else {
+            setUpdateSuccess('error')
+        }
 
     }
 
@@ -62,7 +86,7 @@ export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean
         static={true}
         className="z-[100]"
     >
-        <DialogPanel className="sm:max-w-5xl">
+        <DialogPanel className="max-w-xl">
             <div className="absolute right-0 top-0 pr-3 pt-3">
                 <button
                     type="button"
@@ -76,6 +100,16 @@ export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean
                     />
                 </button>
             </div>
+            {(updateSuccess != "" && updateSuccess != "error") && (
+                <Callout className="mt-4 mb-4" title="Success" icon={CheckCircleIcon} color="teal">
+                    {updateSuccess}
+                </Callout>
+            )}
+            {(updateSuccess == "error") && (
+                <Callout className="mt-4" title="Error" icon={CheckCircleIcon} color="red">
+                    Error sending transaction. Please try again.
+                </Callout>
+            )}
             <form action="#" method="POST">
                 <h4 className="font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
                     Vote for {vote.title}
@@ -86,8 +120,8 @@ export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean
                 <Divider />
 
                 <NumberInput placeholder="Number of votes (1 vote = 1 $FRY)" min={1} defaultValue={1} onValueChange={(value) => {
-           setVoteValue(value);
-           console.log(voteValue)
+                    setVoteValue(value);
+                    console.log(voteValue)
                 }} />
 
                 <Button
