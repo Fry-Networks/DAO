@@ -13,14 +13,6 @@ const BURN_ADDRESS = 'MO3FUXGKGZRTVYOSCXR3FXMPZQCZHR2BGGT2B5SINVBA3W6YCZNO25GGLM
 const FRYIndex = 924268058;
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 
-    const session = await getServerSession(req, res, authOptions);
-    // Check if user is authenticated
-    if ((!session) && process.env.NODE_ENV === "production") {
-        console.log("Unauthorized");
-        console.log(session);
-        res.status(401).json({ message: "Unauthorized" });
-        return;
-    }
 
     const data: {
         index: number,
