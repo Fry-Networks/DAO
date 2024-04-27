@@ -37,7 +37,7 @@ export default function LastVotePage({ vote_data }: { vote_data: Vote | null }) 
                                         <p>{vote.description}</p>
 
                                         <Flex flexDirection='row' justifyContent='between' alignItems='center'>
-                                            <span>{vote.votes} votes &bull; {percent}%</span>
+                                            <span>{vote.votes} votes &bull; {percent ? percent : 0}%</span>
                                             <span>{totalVotes} votes in total</span>
                                         </Flex>
 
@@ -64,7 +64,7 @@ export async function getServerSideProps(context: any) {
                 $ne: true
 
             }, hadVotes: true
-        }).sort({ createdAt: -1 }).limit(1).toArray())[0]
+        }).sort({ end_date: -1 }).limit(1).toArray())[0]
         if (!vote) {
             return {
                 props: { vote_data: null }
