@@ -6,6 +6,7 @@ export interface Vote extends mongoose.Document {
     hadVotes: boolean;
     createdAt: string;
     deleted: boolean;
+    super_majority: boolean;
     current: boolean
     title: string;
     description: string;
@@ -25,6 +26,7 @@ export const voteSchema = new mongoose.Schema({
     total_votes: { type: Number, default: 0},
     hadVotes: { type: Boolean, default: false },
     createdAt: { type: String, default: Date.now },
+    super_majority: { type: Boolean, default: false },
     deleted: { type: Boolean, default: false },
     current: { type: Boolean, default: false },
     title: String,

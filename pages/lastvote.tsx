@@ -9,6 +9,7 @@ import { BarList } from '@tremor/react';
 const colors = ["green", "blue", "yellow", "pink", "purple"] as const;
 export default function LastVotePage({ vote_data }: { vote_data: Vote | null }) {
     const totalVotes = vote_data?.votes.reduce((acc, vote) => acc + vote.votes, 0);
+    const hasWinner = vote_data?.super_majority ? vote_data?.votes.some(vote => vote.votes > totalVotes! / 2) : true
     const winnerVote = vote_data?.votes.reduce((prev, current) => (prev.votes > current.votes) ? prev : current);
     console.log(typeof vote_data?.createdAt)
     return (
@@ -26,12 +27,13 @@ export default function LastVotePage({ vote_data }: { vote_data: Vote | null }) 
                     </span>
 
                     <Divider />
+                    {vote_data.super_majority && <p className='text-lg font-bold text-red-700 dark:text-dark-tremor-content-strong'>This vote required a super majority: no option passes!</p>}
                     <Flex className="grid grid-cols-2 gap-4">
 
                         {vote_data.votes.map((vote, index) => {
                             const percent = Math.round(((vote.votes / totalVotes!) * 100));
                             return (
-                                <Card key={index} className={vote.title === winnerVote?.title ? 'mt-5 border-4' : 'mt-5'} decorationColor={vote.title === winnerVote?.title ? 'green' : 'gray'}>
+                                <Card key={index} className={(vote.title === winnerVote?.title && hasWinner) ? 'mt-5 border-4' : 'mt-5'} decorationColor={(vote.title === winnerVote?.title && hasWinner) ? 'green' : 'gray'}>
                                     <Flex flexDirection='col' justifyContent='center' alignItems='center'>
                                         <Title>{vote.title}</Title>
                                         <p>{vote.description}</p>
@@ -74,6 +76,7 @@ export async function getServerSideProps(context: any) {
             title: vote.title,
             description: vote.description,
             createdAt: vote.createdAt,
+            super_majority: vote.super_majority,
             end_date: vote.end_date,
             votes: vote.votes.map((vote: any) => {
                 return {

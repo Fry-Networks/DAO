@@ -20,8 +20,9 @@ export default function VotePage({ vote_data }: { vote_data: Vote | null }) {
         <Flex flexDirection='col' justifyContent='center' alignItems='center'>
 
           <Title>{vote_data.title}</Title>
-          <p className="mb-10">{vote_data.description}</p>
+          <p className="mb-3">{vote_data.description}</p>
           Will be closed on {new Date(vote_data.end_date).toLocaleString()} UTC
+          {vote_data.super_majority && <p className='font-bold text-tremor-content-strong dark:text-dark-tremor-content-strong'>This vote requires a super majority: in order to pass, one option should receive more than half the votes</p>}
           <Divider />
           <Flex className="grid grid-cols-2 gap-4">
             {
@@ -71,6 +72,7 @@ export async function getServerSideProps(context: any) {
       const data = {
         title: vote.title,
         description: vote.description,
+        super_majority: vote.super_majority,
         end_date: vote.end_date,
         votes: vote.votes.map((vote: any) => {
           return {
