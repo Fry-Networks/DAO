@@ -9,7 +9,14 @@ import { BarList } from '@tremor/react';
 const colors = ["green", "blue", "yellow", "pink", "purple"] as const;
 export default function LastVotePage({ vote_data }: { vote_data: Vote | null }) {
     const totalVotes = vote_data?.votes.reduce((acc, vote) => acc + vote.votes, 0);
-    const hasWinner = vote_data?.super_majority ? vote_data?.votes.some(vote => vote.votes > totalVotes! / 2) : true
+    //check if two options have the same votes
+    const hasWinner = vote_data?.super_majority ? vote_data?.votes.some(vote => vote.votes > totalVotes! / 2) : !vote_data?.votes.some((vote1, index1) => {
+        return vote_data.votes.some((vote2, index2) => {
+            console.log('hey', index1 !== index2 && vote1.votes === vote2.votes)
+            return index1 !== index2 && vote1.votes === vote2.votes;
+        });
+    });
+    ;
     const winnerVote = vote_data?.votes.reduce((prev, current) => (prev.votes > current.votes) ? prev : current);
     console.log(typeof vote_data?.createdAt)
     return (
