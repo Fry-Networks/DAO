@@ -32,7 +32,7 @@ export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean
             }
 
             const suggestedParams = await algodClient.getTransactionParams().do()
-
+            console.log('here')
             const transaction = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
                 from,
                 to,
@@ -43,9 +43,11 @@ export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean
             })
 
             const encodedTransaction = algosdk.encodeUnsignedTransaction(transaction)
+            console.log('here1')
             const signedTransactions = await signTransactions([encodedTransaction])
+            console.log('here2')
             const waitRoundsToConfirm = 4
-            const { id } = await sendTransactions(signedTransactions, waitRoundsToConfirm)
+            let { id } = await sendTransactions(signedTransactions, waitRoundsToConfirm)
             console.log('Successfully sent transaction. Transaction ID: ', id)
             return id
 
@@ -62,7 +64,7 @@ export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean
         console.log(txId)
         if (txId) {
             setUpdateSuccess('Successfully sent transaction. Your vote will be verified soon.')
-            setTimeout(() => setUpdateSuccess(""), 3000);
+            setTimeout(() => setUpdateSuccess(""), 15_000);
             const response = await fetch('/api/new-vote', { // Replace with your actual API endpoint
                 method: 'PUT',
                 headers: {
@@ -73,7 +75,7 @@ export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean
 
             if (!response.ok) {
                 setUpdateSuccess("error"); // Reset success state
-                setTimeout(() => setUpdateSuccess(""), 3000);
+                setTimeout(() => setUpdateSuccess(""), 30_000);
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
         } else {
@@ -130,10 +132,10 @@ export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean
                     className="mt-4"
                     color="blue"
                     disabled={!(voteValue >= 1)}
-                    onClick={(e) => {
+                    onClick={async (e) => {
                         e.preventDefault();
                         console.log(`Voted ${voteValue} votes for ${vote.title}`);
-                        handleVote(vote.index, voteValue);
+                        await handleVote(vote.index, voteValue);
                     }}
                 >
                     Vote (will initiate a transaction)
