@@ -36,7 +36,7 @@ export default function VotePage({ vote_data }: { vote_data: Vote | null }) {
                         <p>{vote.description}</p>
 
                         <Flex flexDirection='row' justifyContent='between' alignItems='center'>
-                          <span>{vote.votes} votes &bull; {percent}%</span>
+                          <span>{vote.votes} votes &bull; {percent ? percent : 0}%</span>
                           <span>{totalVotes} votes in total</span>
                         </Flex>
 
