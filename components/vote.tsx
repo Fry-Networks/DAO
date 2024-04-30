@@ -32,7 +32,6 @@ export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean
             }
 
             const suggestedParams = await algodClient.getTransactionParams().do()
-            console.log('here')
             const transaction = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
                 from,
                 to,
@@ -43,9 +42,7 @@ export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean
             })
 
             const encodedTransaction = algosdk.encodeUnsignedTransaction(transaction)
-            console.log('here1')
             const signedTransactions = await signTransactions([encodedTransaction])
-            console.log('here2')
             const waitRoundsToConfirm = 4
             let { id } = await sendTransactions(signedTransactions, waitRoundsToConfirm)
             console.log('Successfully sent transaction. Transaction ID: ', id)
@@ -131,7 +128,7 @@ export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean
                 <Button
                     className="mt-4"
                     color="blue"
-                    disabled={!(voteValue >= 1)}
+                    disabled={!(Number.isInteger(voteValue) && voteValue >= 1)}
                     onClick={async (e) => {
                         e.preventDefault();
                         console.log(`Voted ${voteValue} votes for ${vote.title}`);
