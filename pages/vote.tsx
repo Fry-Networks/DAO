@@ -33,7 +33,7 @@ export default function VotePage({ vote_data }: { vote_data: Vote | null }) {
                     <Card key={index} className='mt-5'>
                       <Flex flexDirection='col' justifyContent='center' alignItems='center'>
                         <Title>{vote.title}</Title>
-                        <p>{vote.description}</p>
+                        <p dangerouslySetInnerHTML={{ __html: vote.description }}></p>
 
                         <Flex flexDirection='row' justifyContent='between' alignItems='center'>
                           <span>{vote.votes} votes &bull; {percent ? percent : 0}%</span>
