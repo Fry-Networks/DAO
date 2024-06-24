@@ -20,7 +20,7 @@ export default function AllVotesPage({ votes_data }: { votes_data: Vote[] | null
     };
 
     return (
-        <main className="p-4 md:p-10 mx-auto max-w-7xl">
+        <main className="p-4 md:p-10 mx-auto w-full">
             {votes_data && votes_data.length > 0 ? (
                 votes_data.map((vote_data, voteIndex) => {
                     const totalVotes = vote_data?.votes.reduce((acc, vote) => acc + vote.votes, 0);
@@ -30,39 +30,39 @@ export default function AllVotesPage({ votes_data }: { votes_data: Vote[] | null
                     const winnerVote = vote_data?.votes.reduce((prev, current) => (prev.votes > current.votes) ? prev : current);
 
                     return (
-                        <section key={voteIndex} className="mb-10 border border-gray-300 p-4 rounded-lg">
+                        <section key={voteIndex} className="mb-10 border border-gray-300 p-4 rounded-lg w-full">
                             <Button onClick={() => toggleVoteDetails(voteIndex)} className="w-full bg-blue-500 text-white hover:bg-blue-600">
-                                <Flex flexDirection='col' justifyContent='between' alignItems='center'>
-                                    <Title className='text-white'>{vote_data.title}</Title>
-                                    <Flex flexDirection='row' justifyContent='center' alignItems='center'>
+                                <Flex flexDirection='col' justifyContent='between' alignItems='center' className="w-full">
+                                    <Title className='text-white w-full text-center break-words whitespace-normal'>{vote_data.title}</Title>
+                                    <Flex flexDirection='row' justifyContent='center' alignItems='start' className="w-full">
                                         <RiCheckboxCircleFill className='ml-2' color='#45E881'/>
-                                        <Title className='text-white'> Winner: {winnerVote?.description}</Title>
+                                        <Title className='text-white break-words whitespace-normal'> Winner: {winnerVote?.description}</Title>
                                     </Flex>
                                 </Flex>
                             </Button>
                             <div className={`transition-max-height duration-500 ease-in-out overflow-hidden ${expandedVotes[voteIndex] ? 'max-h-screen' : 'max-h-0'}`}>
-                                <Flex flexDirection='col' justifyContent='center' alignItems='center'>
+                                <Flex flexDirection='col' justifyContent='center' alignItems='center' className="w-full">
                                     <p className="mb-10 mt-10">{vote_data.description}</p>
                                     <span>Started on {new Date(vote_data.createdAt).toLocaleString()} UTC</span>
                                     <span>Closed on {new Date(vote_data.end_date).toLocaleString()} UTC</span>
 
                                     <Divider />
                                     {vote_data.super_majority && <p className='text-lg font-bold text-red-700 dark:text-dark-tremor-content-strong'>This vote required a super majority: no option passes!</p>}
-                                    <Flex className="grid grid-cols-2 gap-4 w-full">
+                                    <Flex className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                                         {vote_data.votes.map((vote, index) => {
                                             const percent = Math.round(((vote.votes / totalVotes!) * 100));
                                             return (
-                                                <Card key={index} className={`mt-5 border ${vote.title === winnerVote?.title && hasWinner ? 'border-4 border-green-500' : 'border-gray-300'}`} decorationColor={(vote.title === winnerVote?.title && hasWinner) ? 'green' : 'gray'}>
-                                                    <Flex flexDirection='col' justifyContent='center' alignItems='center'>
-                                                        <Title>{vote.title}</Title>
-                                                        <p>{vote.description}</p>
+                                                <Card key={index} className={`mt-5 w-full border ${vote.title === winnerVote?.title && hasWinner ? 'border-4 border-green-500' : 'border-gray-300'}`} decorationColor={(vote.title === winnerVote?.title && hasWinner) ? 'green' : 'gray'}>
+                                                    <Flex flexDirection='col' justifyContent='center' alignItems='center' className="w-full">
+                                                        <Title className="w-full text-center">{vote.title}</Title>
+                                                        <p className="text-center">{vote.description}</p>
 
-                                                        <Flex flexDirection='row' justifyContent='between' alignItems='center'>
+                                                        <Flex flexDirection='row' justifyContent='between' alignItems='center' className="w-full">
                                                             <span>{vote.votes} votes &bull; {percent ? percent : 0}%</span>
                                                             <span>{totalVotes} votes in total</span>
                                                         </Flex>
 
-                                                        <ProgressBar value={percent} color={colors[index]} className="mt-3" />
+                                                        <ProgressBar value={percent} color={colors[index]} className="mt-3 w-full" />
                                                     </Flex>
                                                 </Card>
                                             );
