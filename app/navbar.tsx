@@ -10,13 +10,13 @@ import Image from 'next/image';
 const navigation = [
   { name: 'Vote', href: '/vote' },
   { name: 'Last Vote', href: '/lastvote' },
+  { name: 'All Votes', href: '/allvotes' },
 ];
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
-import { useSession } from 'next-auth/react';
 
 export default function Navbar() {
   const pathname = usePathname();
