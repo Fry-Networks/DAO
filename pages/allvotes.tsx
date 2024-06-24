@@ -20,7 +20,7 @@ export default function AllVotesPage({ votes_data }: { votes_data: Vote[] | null
     };
 
     return (
-        <main className="p-4 md:p-10 mx-auto w-full">
+        <main className="p-4 md:p-10 mx-auto w-full flex flex-col gap-6">
             {votes_data && votes_data.length > 0 ? (
                 votes_data.map((vote_data, voteIndex) => {
                     const totalVotes = vote_data?.votes.reduce((acc, vote) => acc + vote.votes, 0);
@@ -30,19 +30,19 @@ export default function AllVotesPage({ votes_data }: { votes_data: Vote[] | null
                     const winnerVote = vote_data?.votes.reduce((prev, current) => (prev.votes > current.votes) ? prev : current);
 
                     return (
-                        <section key={voteIndex} className="mb-10 border border-gray-300 p-4 rounded-lg w-full">
+                        <section key={voteIndex} className="border border-gray-300 p-4 rounded-lg w-full max-h-[600px] overflow-auto">
                             <Button onClick={() => toggleVoteDetails(voteIndex)} className="w-full bg-blue-500 text-white hover:bg-blue-600">
                                 <Flex flexDirection='col' justifyContent='between' alignItems='center' className="w-full">
                                     <Title className='text-white w-full text-center break-words whitespace-normal'>{vote_data.title}</Title>
-                                    <Flex flexDirection='row' justifyContent='center' alignItems='start' className="w-full">
+                                    <Flex flexDirection='row' justifyContent='center' alignItems='center' className="w-full">
                                         <RiCheckboxCircleFill className='ml-2' color='#45E881'/>
                                         <Title className='text-white break-words whitespace-normal'> Winner: {winnerVote?.description}</Title>
                                     </Flex>
                                 </Flex>
                             </Button>
-                            <div className={`transition-max-height duration-500 ease-in-out overflow-hidden ${expandedVotes[voteIndex] ? 'max-h-screen' : 'max-h-0'}`}>
+                            <div className={`transition-max-height duration-500 ease-in-out ${expandedVotes[voteIndex] ? 'max-h-[600px] ' : 'max-h-0'}`}>
                                 <Flex flexDirection='col' justifyContent='center' alignItems='center' className="w-full">
-                                    <p className="mb-10 mt-10">{vote_data.description}</p>
+                                    <p className="mt-6 mb-10">{vote_data.description}</p>
                                     <span>Started on {new Date(vote_data.createdAt).toLocaleString()} UTC</span>
                                     <span>Closed on {new Date(vote_data.end_date).toLocaleString()} UTC</span>
 
