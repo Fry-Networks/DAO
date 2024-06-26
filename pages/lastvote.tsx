@@ -97,7 +97,8 @@ export async function getServerSideProps(context: any) {
                 return {
                     title: vote.title,
                     description: vote.description,
-                    votes: vote.votes
+                    votes: vote.votes,
+                    different_people: vote.different_people.length
                 }
             }
             )
