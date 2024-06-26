@@ -5,6 +5,7 @@ import clientPromise from '../lib/mongoclient';
 import { useWallet } from '@txnlab/use-wallet';
 import { BarList } from '@tremor/react';
 import { RiCheckboxCircleFill } from '@remixicon/react';
+import { all } from 'axios';
 
 const colors = ["green", "blue", "yellow", "pink", "purple"] as const;
 
@@ -30,17 +31,17 @@ export default function AllVotesPage({ votes_data }: { votes_data: Vote[] | null
                     const winnerVote = vote_data?.votes.reduce((prev, current) => (prev.votes > current.votes) ? prev : current);
 
                     return (
-                        <section key={voteIndex} className="border border-gray-300 p-4 rounded-lg w-full max-h-[600px] overflow-auto">
+                        <section key={voteIndex} className="border border-gray-300 p-4 rounded-lg w-full">
                             <Button onClick={() => toggleVoteDetails(voteIndex)} className="w-full bg-blue-500 text-white hover:bg-blue-600">
                                 <Flex flexDirection='col' justifyContent='between' alignItems='center' className="w-full">
                                     <Title className='text-white w-full text-center break-words whitespace-normal'>{vote_data.title}</Title>
                                     <Flex flexDirection='row' justifyContent='center' alignItems='center' className="w-full">
-                                        <RiCheckboxCircleFill className='ml-2' color='#45E881'/>
+                                        <RiCheckboxCircleFill className='ml-2' color='#45E881' />
                                         <Title className='text-white break-words whitespace-normal'> Winner: {winnerVote?.description}</Title>
                                     </Flex>
                                 </Flex>
                             </Button>
-                            <div className={`transition-max-height duration-500 ease-in-out ${expandedVotes[voteIndex] ? 'max-h-[600px] ' : 'max-h-0'}`}>
+                            <div className={`transition-max-height duration-500 ease-in-out ${expandedVotes[voteIndex] ? 'max-h-[600px] overflow-auto' : 'max-h-0 overflow-hidden'}`}>
                                 <Flex flexDirection='col' justifyContent='center' alignItems='center' className="w-full">
                                     <p className="mt-6 mb-10">{vote_data.description}</p>
                                     <span>Started on {new Date(vote_data.createdAt).toLocaleString()} UTC</span>
@@ -60,6 +61,11 @@ export default function AllVotesPage({ votes_data }: { votes_data: Vote[] | null
                                                         <Flex flexDirection='row' justifyContent='between' alignItems='center' className="w-full">
                                                             <span>{vote.votes} votes &bull; {percent ? percent : 0}%</span>
                                                             <span>{totalVotes} votes in total</span>
+                                                        </Flex>
+                                                        <Flex flexDirection='row' justifyContent='between' alignItems='center' className="w-full">
+                                                            <span>{vote.different_people} wallets</span>
+                                                            {/*@ts-ignore*/}
+                                                            <span>{vote_data.all_people_number} wallets in total</span>
                                                         </Flex>
 
                                                         <ProgressBar value={percent} color={colors[index]} className="mt-3 w-full" />
@@ -95,18 +101,25 @@ export async function getServerSideProps(context: any) {
             };
         }
 
-        const data = votes.map(vote => ({
-            title: vote.title,
-            description: vote.description,
-            createdAt: vote.createdAt,
-            super_majority: vote.super_majority,
-            end_date: vote.end_date,
-            votes: vote.votes.map((vote: any) => ({
+        const data = votes.map(vote => {
+            const all_people_number = vote.votes.reduce((total: any, vote: { different_people: string | any[]; }) => total + vote.different_people.length, 0);
+            console.log(all_people_number);
+            return {
                 title: vote.title,
                 description: vote.description,
-                votes: vote.votes
-            }))
-        }));
+                createdAt: vote.createdAt,
+                super_majority: vote.super_majority,
+                end_date: vote.end_date,
+                all_people_number: all_people_number,
+                votes: vote.votes.map((vote: any) => ({
+                    title: vote.title,
+                    description: vote.description,
+                    votes: vote.votes,
+                    different_people: vote.different_people.length
+                }))
+            }
+
+        });
 
         return {
             props: { votes_data: JSON.parse(JSON.stringify(data)) }

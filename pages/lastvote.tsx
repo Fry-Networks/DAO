@@ -49,6 +49,11 @@ export default function LastVotePage({ vote_data }: { vote_data: Vote | null }) 
                                             <span>{vote.votes} votes &bull; {percent ? percent : 0}%</span>
                                             <span>{totalVotes} votes in total</span>
                                         </Flex>
+                                        <Flex flexDirection='row' justifyContent='between' alignItems='center' className="w-full">
+                                            <span>{vote.different_people} wallets</span>
+                                            {/*@ts-ignore*/}
+                                            <span>{vote_data.all_people_number} wallets in total</span>
+                                        </Flex>
 
                                         <ProgressBar value={percent} color={colors[index]} className="mt-3" />
                                     </Flex>
@@ -79,12 +84,15 @@ export async function getServerSideProps(context: any) {
                 props: { vote_data: null }
             }
         }
+        const all_people_number = vote.votes.reduce((total: any, vote: { different_people: string | any[]; }) => total + vote.different_people.length, 0);
+        console.log(all_people_number);
         const data = {
             title: vote.title,
             description: vote.description,
             createdAt: vote.createdAt,
             super_majority: vote.super_majority,
             end_date: vote.end_date,
+            all_people_number: all_people_number,
             votes: vote.votes.map((vote: any) => {
                 return {
                     title: vote.title,
