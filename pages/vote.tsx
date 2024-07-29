@@ -74,19 +74,11 @@ export async function getServerSideProps(context: any) {
         description: vote.description,
         super_majority: vote.super_majority,
         end_date: vote.end_date,
-        votes: vote.votes.map((vote: Vote) => {
+        votes: vote.votes.map((vote_option: any) => {
           return {
-            title: vote.title,
-            description: vote.description,
-            votes: vote.votes.map((vote: any) => {
-              return {
-                option: vote.option,
-                description: vote.description,
-                title: vote.title,
-                votes: vote.hidden ? 0 : vote.votes,
-                different_people: vote.hidden ? 0 : vote.different_people
-              }
-            })
+            title: vote_option.title,
+            description: vote_option.description,
+            votes: vote.hidden ? 0 : vote_option.votes
           }
         }
         )
