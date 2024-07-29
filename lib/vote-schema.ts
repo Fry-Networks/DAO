@@ -8,6 +8,7 @@ export interface Vote extends mongoose.Document {
     deleted: boolean;
     super_majority: boolean;
     current: boolean
+    hidden?: boolean;
     title: string;
     description: string;
     votes: [

@@ -5,11 +5,13 @@ import { useState } from 'react';
 import ModalVote from '../components/vote';
 import { Dialog } from '@tremor/react';
 import { useWallet } from '@txnlab/use-wallet';
-import { BarList } from '@tremor/react';
+import marked from 'marked';
+import DOMPurify from 'dompurify';
 const colors = ["green", "blue", "yellow", "pink", "purple"] as const;
 export default function VotePage({ vote_data }: { vote_data: Vote | null }) {
   const { providers, activeAccount } = useWallet()
   const [openModalId, setOpenModalId] = useState(null as number | null);
+
   const handleCloseModal = (index: number) => {
     setOpenModalId(null);
   }
@@ -20,7 +22,7 @@ export default function VotePage({ vote_data }: { vote_data: Vote | null }) {
         <Flex flexDirection='col' justifyContent='center' alignItems='center'>
 
           <Title>{vote_data.title}</Title>
-          <p className="mb-3">{vote_data.description}</p>
+        <div className="markdown-content mb-3" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(vote_data.description) }} />
           Will be closed on {new Date(vote_data.end_date).toLocaleString()} UTC
           {vote_data.super_majority && <p className='font-bold text-tremor-content-strong dark:text-dark-tremor-content-strong'>This vote requires a super majority: in order to pass, one option should receive more than half the votes</p>}
           <Divider />
@@ -63,15 +65,20 @@ export async function getServerSideProps(context: any) {
     const client = await clientPromise;
     const db = client.db('main');
 
-    const vote = (await db.collection('dao').find({ current: true }).toArray())[0]
+    const vote = (await db.collection('dao').find({ current: true }).toArray())[0] as Vote
     if (!vote) {
       return {
         props: { vote_data: null }
       }
     } else {
+      const renderMarkdown = async (markdown: string) => {
+        const rawHTML = await marked.parse(markdown) as string;
+        return rawHTML
+      };
+     
       const data = {
         title: vote.title,
-        description: vote.description,
+        description: await renderMarkdown(vote.description),
         super_majority: vote.super_majority,
         end_date: vote.end_date,
         votes: vote.votes.map((vote_option: any) => {
