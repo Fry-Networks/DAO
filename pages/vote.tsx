@@ -1,4 +1,4 @@
-import { Button, Card, Divider, Flex, ProgressBar, Title } from '@tremor/react';
+import { Button, Card, Divider, Flex, Icon, ProgressBar, Title } from '@tremor/react';
 import { Vote } from '../lib/vote-schema';
 import clientPromise from '../lib/mongoclient';
 import { useState } from 'react';
@@ -7,6 +7,8 @@ import { Dialog } from '@tremor/react';
 import { useWallet } from '@txnlab/use-wallet';
 import marked from 'marked';
 import DOMPurify from 'dompurify';
+import { EyeSlashIcon } from '@heroicons/react/24/outline';
+
 const colors = ["green", "blue", "yellow", "pink", "purple"] as const;
 export default function VotePage({ vote_data }: { vote_data: Vote | null }) {
   const { providers, activeAccount } = useWallet()
@@ -26,6 +28,10 @@ export default function VotePage({ vote_data }: { vote_data: Vote | null }) {
           Will be closed on {new Date(vote_data.end_date).toLocaleString()} UTC
           {vote_data.super_majority && <p className='font-bold text-tremor-content-strong dark:text-dark-tremor-content-strong'>This vote requires a super majority: in order to pass, one option should receive more than half the votes</p>}
           <Divider />
+          <Flex flexDirection='row' justifyContent='center' alignItems='center' className='mt-5'>
+          <Icon icon={EyeSlashIcon} size='xl' tooltip='Votes are currently hidden and will be revealed at the end of the FIP'></Icon> 
+          <Title>Hidden votes</Title>
+          </Flex>
           <Flex className="grid grid-cols-2 gap-4">
             {
               activeAccount ?
@@ -37,11 +43,11 @@ export default function VotePage({ vote_data }: { vote_data: Vote | null }) {
                         <Title>{vote.title}</Title>
                         <p>{vote.description}</p>
 
-                        <Flex flexDirection='row' justifyContent='between' alignItems='center'>
+                       {!vote_data.hidden &&  (<Flex flexDirection='row' justifyContent='between' alignItems='center'>
                           <span>{vote.votes} votes &bull; {percent ? percent : 0}%</span>
                           <span>{totalVotes} votes in total</span>
-                        </Flex>
-
+                        </Flex>)
+}
                         <ProgressBar value={percent} color={colors[index]} className="mt-3" />
                         <Button className="mt-2" color={colors[index]} size='lg' onClick={() => setOpenModalId(index)}
                         >Vote</Button>
@@ -75,12 +81,12 @@ export async function getServerSideProps(context: any) {
         const rawHTML = await marked.parse(markdown) as string;
         return rawHTML
       };
-     
       const data = {
         title: vote.title,
         description: await renderMarkdown(vote.description),
         super_majority: vote.super_majority,
         end_date: vote.end_date,
+        hidden: vote.hidden,
         votes: vote.votes.map((vote_option: any) => {
           return {
             title: vote_option.title,
