@@ -1,11 +1,8 @@
-import { Button, Card, Divider, Flex, ProgressBar, Title } from '@tremor/react';
+import { Card, Divider, Flex, ProgressBar, Title } from '@tremor/react';
 import { Vote } from '../lib/vote-schema';
 import clientPromise from '../lib/mongoclient';
-import { useState } from 'react';
-import ModalVote from '../components/vote';
-import { Dialog } from '@tremor/react';
-import { useWallet } from '@txnlab/use-wallet';
-import { BarList } from '@tremor/react';
+import marked from 'marked';
+import DOMPurify from 'dompurify';
 const colors = ["green", "blue", "yellow", "pink", "purple"] as const;
 export default function LastVotePage({ vote_data }: { vote_data: Vote | null }) {
     const totalVotes = vote_data?.votes.reduce((acc, vote) => acc + vote.votes, 0);
@@ -25,7 +22,7 @@ export default function LastVotePage({ vote_data }: { vote_data: Vote | null }) 
                 <Flex flexDirection='col' justifyContent='center' alignItems='center'>
 
                     <Title>{vote_data.title}</Title>
-                    <p className="mb-10">{vote_data.description}</p>
+                    <div className="markdown-content mb-3" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(vote_data.description) }} />
                     <span>
                         Started on {new Date(vote_data.createdAt).toLocaleString()} UTC
                     </span>
@@ -84,11 +81,17 @@ export async function getServerSideProps(context: any) {
                 props: { vote_data: null }
             }
         }
+
+        const renderMarkdown = async (markdown: string) => {
+            const rawHTML = await marked.parse(markdown) as string;
+            return rawHTML
+          };
+
         const all_people_number = vote.votes.reduce((total: any, vote: { different_people: string | any[]; }) => total + vote.different_people.length, 0);
         console.log(all_people_number);
         const data = {
             title: vote.title,
-            description: vote.description,
+            description: await renderMarkdown(vote.description),
             createdAt: vote.createdAt,
             super_majority: vote.super_majority,
             end_date: vote.end_date,
