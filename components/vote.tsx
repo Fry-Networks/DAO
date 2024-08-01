@@ -122,7 +122,6 @@ export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean
 
                 <NumberInput placeholder="Number of votes (1 vote = 1 $FRY)" min={1} defaultValue={1} onValueChange={(value) => {
                     setVoteValue(value);
-                    console.log(voteValue)
                 }} />
 
                 <Button
@@ -131,7 +130,6 @@ export default function ModalVote({ isOpen, setIsOpen, vote }: { isOpen: boolean
                     disabled={!(Number.isInteger(voteValue) && voteValue >= 1)}
                     onClick={async (e) => {
                         e.preventDefault();
-                        console.log(`Voted ${voteValue} votes for ${vote.title}`);
                         await handleVote(vote.index, voteValue);
                     }}
                 >

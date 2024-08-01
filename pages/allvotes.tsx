@@ -103,7 +103,6 @@ export async function getServerSideProps(context: any) {
 
         const data = votes.map(vote => {
             const all_people_number = vote.votes.reduce((total: any, vote: { different_people: string | any[]; }) => total + vote.different_people.length, 0);
-            console.log(all_people_number);
             return {
                 title: vote.title,
                 description: vote.description,

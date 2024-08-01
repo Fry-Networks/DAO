@@ -9,13 +9,12 @@ export default function LastVotePage({ vote_data }: { vote_data: Vote | null }) 
     //check if two options have the same votes
     const hasWinner = vote_data?.super_majority ? vote_data?.votes.some(vote => vote.votes > totalVotes! / 2) : !vote_data?.votes.some((vote1, index1) => {
         return vote_data.votes.some((vote2, index2) => {
-            console.log('hey', index1 !== index2 && vote1.votes === vote2.votes)
+          
             return index1 !== index2 && vote1.votes === vote2.votes;
         });
     });
     ;
     const winnerVote = vote_data?.votes.reduce((prev, current) => (prev.votes > current.votes) ? prev : current);
-    console.log(typeof vote_data?.createdAt)
     return (
         <main className="p-4 md:p-10 mx-auto max-w-7xl">
             {vote_data !== null ? (
@@ -88,7 +87,7 @@ export async function getServerSideProps(context: any) {
           };
 
         const all_people_number = vote.votes.reduce((total: any, vote: { different_people: string | any[]; }) => total + vote.different_people.length, 0);
-        console.log(all_people_number);
+
         const data = {
             title: vote.title,
             description: await renderMarkdown(vote.description),
