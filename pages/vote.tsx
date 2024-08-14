@@ -99,7 +99,6 @@ export async function getServerSideProps(context: any) {
         }
         )
       }
-      console.log(data)
       return {
         props: { vote_data: JSON.parse(JSON.stringify(data)) }
       };
