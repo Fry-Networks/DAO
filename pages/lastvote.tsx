@@ -5,6 +5,7 @@ import marked from 'marked';
 import DOMPurify from 'dompurify';
 const colors = ["green", "blue", "yellow", "pink", "purple"] as const;
 export default function LastVotePage({ vote_data }: { vote_data: Vote | null }) {
+    console.log(vote_data);
     const totalVotes = vote_data?.votes.reduce((acc, vote) => acc + vote.votes, 0);
     //check if two options have the same votes
     const hasWinner = vote_data?.super_majority ? vote_data?.votes.some(vote => vote.votes > totalVotes! / 2) : !vote_data?.votes.some((vote1, index1) => {
@@ -39,7 +40,7 @@ export default function LastVotePage({ vote_data }: { vote_data: Vote | null }) 
                                 <Card key={index} className={(vote.title === winnerVote?.title && hasWinner) ? 'mt-5 border-4' : 'mt-5'} decorationColor={(vote.title === winnerVote?.title && hasWinner) ? 'green' : 'gray'}>
                                     <Flex flexDirection='col' justifyContent='center' alignItems='center'>
                                         <Title>{vote.title}</Title>
-                                        <p>{vote.description}</p>
+                                        <div className="markdown-content mb-3" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(vote.description) }} />
 
                                         <Flex flexDirection='row' justifyContent='between' alignItems='center'>
                                             <span>{vote.votes} votes &bull; {percent ? percent : 0}%</span>
@@ -74,7 +75,7 @@ export async function getServerSideProps(context: any) {
                 $ne: true
 
             }, hadVotes: true
-        }).sort({ end_date: -1 }).limit(1).toArray())[0]
+        }).sort({ end_date: -1 }).limit(1).toArray())[0] as Vote;
         if (!vote) {
             return {
                 props: { vote_data: null }
@@ -87,7 +88,9 @@ export async function getServerSideProps(context: any) {
           };
 
         const all_people_number = vote.votes.reduce((total: any, vote: { different_people: string | any[]; }) => total + vote.different_people.length, 0);
-
+        const vote_descriptions = await Promise.all(vote.votes.map(async (vote_option: any) => {
+            return await renderMarkdown(vote_option.description)
+          }));
         const data = {
             title: vote.title,
             description: await renderMarkdown(vote.description),
@@ -95,12 +98,12 @@ export async function getServerSideProps(context: any) {
             super_majority: vote.super_majority,
             end_date: vote.end_date,
             all_people_number: all_people_number,
-            votes: vote.votes.map((vote: any) => {
+            votes: vote.votes.map((vote_option) => {
                 return {
-                    title: vote.title,
-                    description: vote.description,
-                    votes: vote.votes,
-                    different_people: vote.different_people.length
+                    title: vote_option.title,
+                    description: vote_descriptions[vote.votes.indexOf(vote_option)],
+                    votes: vote_option.votes,
+                    different_people: vote_option.different_people.length
                 }
             }
             )
