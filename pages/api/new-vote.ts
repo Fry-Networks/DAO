@@ -11,7 +11,7 @@ const algodClient = new algosdk.Algodv2(
 );
 const BURN_ADDRESS =
   'CM3FF3D3PNCZYD62A7LT6WWG4OBX2JAGVCDRRZRM373SUM6HNR4TFNKYYM';
-const FRYIndex = 924268058;
+const FRYIndex = 2485314946;
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -76,12 +76,15 @@ export default async function handler(
         }
       );
 
-      await stakeCollection.updateOne(
-        { voteId: currentVote._id, option: index.toString(), address: sender },
-        {
-          $inc: { stakes: assetAmount / 1e6, votes: votes }
-        }
-      );
+      await stakeCollection.insertOne({
+        voteTitle: currentVote.title,
+        voteOption: index.toString(),
+        votes: votes,
+        stakes: assetAmount / 1e6,
+        end_date: currentVote.end_date,
+        assetId: assetId,
+        address: sender
+      });
     } else {
       await collection.updateOne(
         { _id: currentVote._id, 'votes.option': index.toString() },
@@ -92,9 +95,14 @@ export default async function handler(
       );
 
       await stakeCollection.updateOne(
-        { voteId: currentVote._id, option: index.toString(), address: sender },
         {
-          $set: { end_date: currentVote.end_date, assetId: assetId },
+          voteTitle: currentVote.title,
+          option: index.toString(),
+          address: sender,
+          assetId: assetId
+        },
+        {
+          $set: { end_date: currentVote.end_date },
           $inc: { stakes: assetAmount / 1e6, votes: votes }
         }
       );

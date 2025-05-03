@@ -1,28 +1,81 @@
+import { Callout, Flex } from '@tremor/react';
 import clientPromise from '../lib/mongoclient';
 import { Stake } from '../lib/stake-schema';
 import { Vote } from '../lib/vote-schema';
+import { useWallet } from '@txnlab/use-wallet';
+import { useEffect, useState } from 'react';
+import StakeItem from '../components/stake';
+import { CheckCircleIcon } from '@heroicons/react/24/outline';
 
 export default function StakePage() {
-  return <main className="p-4 md:p-10 mx-auto max-w-7xl"></main>;
-}
+  const { activeAccount } = useWallet();
+  const [stakes, setStakes] = useState<Stake[] | undefined>(undefined);
+  const [updateSuccess, setUpdateSuccess] = useState<{
+    success: boolean;
+    message: string;
+  }>({ success: false, message: '' });
 
-export async function getServerSideProps(context: any) {
-  try {
-    const client = await clientPromise;
-    const db = client.db('main');
+  useEffect(() => {
+    const fetchStakes = async () => {
+      if (activeAccount) {
+        const response = await fetch('/api/get-stakes', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ address: activeAccount.address })
+        });
 
-    const stakeCollection = db.collection('dao-stakes');
-    const voteCollection = db.collection('dao');
+        if (!response.ok) {
+          setStakes(undefined);
+          return;
+        }
 
-    const stakes = (await stakeCollection.find({}).toArray()) as Stake[];
-    const votes = (await voteCollection.find({}).toArray()) as Vote[];
-    return {
-      props: {
-        stakes: [],
-        votes: []
+        const result = await response.json();
+        setStakes(result.data);
+      } else {
+        setStakes(undefined);
       }
     };
-  } catch (error) {
-    console.error(error);
+
+    fetchStakes();
+  }, [activeAccount]);
+
+  function handleMessage(success: boolean, message: string) {
+    setUpdateSuccess({ success: success, message: message });
+    setTimeout(() => {
+      setUpdateSuccess({ success: false, message: '' });
+    }, 1_500);
   }
+
+  return (
+    <main className="p-4 md:p-10 mx-auto max-w-7xl">
+      {updateSuccess.message != '' && updateSuccess.success != false && (
+        <Callout
+          className="mt-4 mb-4"
+          title="Success"
+          icon={CheckCircleIcon}
+          color="teal"
+        >
+          {updateSuccess.message}
+        </Callout>
+      )}
+      {updateSuccess.message != '' && updateSuccess.success == false && (
+        <Callout
+          className="mt-4 mb-4"
+          title="Error"
+          icon={CheckCircleIcon}
+          color="red"
+        >
+          {updateSuccess.message}
+        </Callout>
+      )}
+      <Flex flexDirection="col" className="w-full gap-2">
+        {stakes &&
+          stakes.map((stake) => {
+            return <StakeItem stake={stake} handleMessage={handleMessage} />;
+          })}
+      </Flex>
+    </main>
+  );
 }

@@ -1,19 +1,23 @@
 import mongoose from 'mongoose';
 
 export interface Stake extends mongoose.Document {
-  voteId: object;
+  voteTitle: string;
   option: string;
   address: string;
   end_date: Date;
   stakes: number;
   votes: number;
+  assetId: string;
+  withdraw?: boolean;
 }
 
 export const stakeSchema = new mongoose.Schema({
-  voteId: Object,
+  voteTitle: String,
   option: String,
   address: String,
   end_date: Date,
   stakes: Number,
-  votes: Number
+  votes: Number,
+  assetId: String,
+  withdraw: Boolean
 });
