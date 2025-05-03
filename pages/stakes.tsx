@@ -70,12 +70,18 @@ export default function StakePage() {
           {updateSuccess.message}
         </Callout>
       )}
-      <Flex flexDirection="col" className="w-full gap-2">
-        {stakes &&
-          stakes.map((stake) => {
-            return <StakeItem stake={stake} handleMessage={handleMessage} />;
-          })}
-      </Flex>
+      {activeAccount ? (
+        <Flex flexDirection="col" className="w-full gap-2">
+          {stakes &&
+            stakes.map((stake) => {
+              return <StakeItem stake={stake} handleMessage={handleMessage} />;
+            })}
+        </Flex>
+      ) : (
+        <p style={{ marginTop: '15px' }}>
+          You need to connect your wallet to vote!
+        </p>
+      )}
     </main>
   );
 }
