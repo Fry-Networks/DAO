@@ -79,7 +79,7 @@ export default function StakePage() {
         </Flex>
       ) : (
         <p style={{ marginTop: '15px' }}>
-          You need to connect your wallet to vote!
+          You need to connect your wallet to check staking information!
         </p>
       )}
     </main>
