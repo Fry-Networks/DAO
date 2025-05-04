@@ -13,14 +13,21 @@ export default async function handler(
 
   const { address } = data;
 
+  const testMode = process.env.NEXT_PUBLIC_TEST === 'true' ? true : false;
+  console.log(address);
+
   try {
     const client = await clientPromise;
     const db = client.db();
-    const collection = db.collection('dao-stakes');
+    const collection = db.collection(
+      testMode ? 'test-dao-stakes' : 'dao-stakes'
+    );
 
     const result = (await collection
       .find({ address: address })
       .toArray()) as Stake[];
+
+    console.log(result);
     if (result.length > 0) {
       res.status(200).json({ status: true, data: result });
     } else {

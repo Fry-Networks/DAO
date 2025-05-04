@@ -173,6 +173,7 @@ async function getPriceOfAsset(price: Price) {
 }
 
 export async function getServerSideProps(context: any) {
+  const testMode = process.env.NEXT_PUBLIC_TEST === 'true' ? true : false;
   try {
     const client = await clientPromise;
     const db = client.db('main');
@@ -184,13 +185,19 @@ export async function getServerSideProps(context: any) {
     const priceValue = await getPriceOfAsset(price);
 
     const vote = (
-      await db.collection('dao').find({ current: true }).toArray()
+      await db
+        .collection(testMode ? 'test-dao' : 'dao')
+        .find({ current: true })
+        .toArray()
     )[0] as Vote;
+
+    console.log(priceValue);
+
     if (!vote) {
       return {
         props: {
           vote_data: null,
-          price: price ? price : null,
+          price: price ? JSON.parse(JSON.stringify(price)) : null,
           priceValue: priceValue
         }
       };
@@ -221,7 +228,7 @@ export async function getServerSideProps(context: any) {
       return {
         props: {
           vote_data: JSON.parse(JSON.stringify(data)),
-          price: price ? price : null,
+          price: price ? JSON.parse(JSON.stringify(price)) : null,
           priceValue: priceValue
         }
       };

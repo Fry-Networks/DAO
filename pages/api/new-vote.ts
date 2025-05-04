@@ -24,6 +24,7 @@ export default async function handler(
   } = req.body;
 
   const { index, txId, priceValue, assetId } = data;
+  const testMode = process.env.NEXT_PUBLIC_TEST === 'true' ? true : false;
   try {
     let retries = 0;
     console.log('Checking transaction info for txId: ', txId);
@@ -55,8 +56,10 @@ export default async function handler(
     const votes = assetAmount / 1e6 / priceValue;
     const client = await clientPromise;
     const db = client.db();
-    const collection = db.collection('dao');
-    const stakeCollection = db.collection('dao-stakes');
+    const collection = db.collection(testMode ? 'test-dao' : 'dao');
+    const stakeCollection = db.collection(
+      testMode ? 'test-dao-stakes' : 'dao-stakes'
+    );
     const currentVote = await collection.findOne({ current: true });
     if (!currentVote) {
       throw new Error('No active vote found');

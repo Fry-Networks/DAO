@@ -14,7 +14,7 @@ export default function StakePage() {
     success: boolean;
     message: string;
   }>({ success: false, message: '' });
-
+  const testMode = process.env.NEXT_PUBLIC_TEST === 'true' ? true : false;
   useEffect(() => {
     const fetchStakes = async () => {
       if (activeAccount) {

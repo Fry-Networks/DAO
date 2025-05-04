@@ -5,9 +5,14 @@ import algosdk, { Indexer } from 'algosdk';
 import { flightRouterStateSchema } from 'next/dist/server/app-render/types';
 
 const calculateTimeLeft = (stake: Stake) => {
+  const testMode = process.env.NEXT_PUBLIC_TEST === 'true' ? true : false;
   const now = new Date(Date.now());
   const voteEndDate = new Date(stake.end_date);
-  const goalTime = new Date(voteEndDate.setMonth(voteEndDate.getMonth() + 6));
+  const goalTime = new Date(
+    testMode
+      ? voteEndDate.setDate(voteEndDate.getDate() + 1)
+      : voteEndDate.setMonth(voteEndDate.getMonth() + 6)
+  );
 
   if (goalTime.getTime() - now.getTime() < 1000) {
     return 0;
@@ -143,6 +148,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const testMode = process.env.NEXT_PUBLIC_TEST === 'true' ? true : false;
   const query: {
     address: string;
     data: Stake;
@@ -159,7 +165,9 @@ export default async function handler(
   try {
     const client = await clientPromise;
     const db = client.db();
-    const collection = db.collection('dao-stakes');
+    const collection = db.collection(
+      testMode ? 'test-dao-stakes' : 'dao-stakes'
+    );
 
     const result = (await collection.findOne({
       address: address,
@@ -205,12 +213,10 @@ export default async function handler(
     );
 
     const withdrawResult = await withdraw(data);
-    res
-      .status(200)
-      .json({
-        success: withdrawResult.length ? true : false,
-        message: withdrawResult
-      });
+    res.status(200).json({
+      success: withdrawResult.length ? true : false,
+      message: withdrawResult
+    });
   } catch (error) {
     console.error('Internal Server Error: ', error);
     res.status(500).json({ message: 'Internal server error' });

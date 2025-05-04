@@ -1,4 +1,4 @@
-import { Button, Flex, Text, Title } from '@tremor/react';
+import { Button, Divider, Flex, Text, Title } from '@tremor/react';
 import { Stake } from '../lib/stake-schema';
 import { useEffect, useState } from 'react';
 import { useWallet } from '@txnlab/use-wallet';
@@ -11,6 +11,8 @@ interface TimeLeft {
   minutes: number;
   seconds: number;
 }
+
+const testMode = process.env.NEXT_PUBLIC_TEST === 'true' ? true : false;
 
 export default function StakeItem({
   stake,
@@ -28,9 +30,18 @@ export default function StakeItem({
     return result;
   }
 
+  function addOneDay(date: Date) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + 1);
+    return result;
+  }
+
   function calculateTimeLeft() {
     const now = new Date();
-    const goalTime = addSixMonths(new Date(stake.end_date));
+    const goalTime = testMode
+      ? addOneDay(new Date(stake.end_date))
+      : addSixMonths(new Date(stake.end_date));
+    console.log(goalTime);
     const difference = goalTime.getTime() - now.getTime();
     if (difference <= 0) {
       return {
@@ -108,25 +119,31 @@ export default function StakeItem({
   }
 
   return (
-    <div className="w-full p-4 border-green-700 border-2">
+    <div className="w-full p-4 border-green-700 border-2 rounded-2xl">
       <Title className="w-full">{stake.voteTitle}</Title>
+      <Divider className="mt-1 mb-2" />
+      <Text>Option: {Number(stake.option) + 1}</Text>
+      <Text className="mt-2">
+        Staked {stake.stakes} for {stake.votes} votes
+      </Text>
       <Flex>
         {timeLeft.totalMilliseconds > 24 * 60 * 60 * 1000 ? (
           <Text>
-            {timeLeft.months} months {timeLeft.days} days{' '}
+            {timeLeft.months} months {timeLeft.days} days left to withdraw
           </Text>
         ) : (
           <Text>
-            {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s
+            {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s days to
+            withdraw
           </Text>
         )}
         <Button
           disabled={
-            timeLeft.months <= 0 &&
-            timeLeft.days <= 0 &&
-            timeLeft.hours <= 0 &&
-            timeLeft.minutes <= 0 &&
-            timeLeft.seconds <= 0
+            timeLeft.months > 0 ||
+            timeLeft.days > 0 ||
+            timeLeft.hours > 0 ||
+            timeLeft.minutes > 0 ||
+            timeLeft.seconds > 0
           }
           onClick={() => handleWithdraw()}
         >
