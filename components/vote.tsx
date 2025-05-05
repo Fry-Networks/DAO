@@ -105,6 +105,7 @@ export default function ModalVote({
       }
     } else {
       setUpdateSuccess('error');
+      setTimeout(() => setUpdateSuccess(''), 30_000);
     }
   };
 
