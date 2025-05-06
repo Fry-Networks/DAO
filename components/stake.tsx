@@ -133,7 +133,7 @@ export default function StakeItem({
           </Text>
         ) : (
           <Text>
-            {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s days to
+            {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s left to
             withdraw
           </Text>
         )}
