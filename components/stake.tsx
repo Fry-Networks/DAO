@@ -122,7 +122,7 @@ export default function StakeItem({
     <div className="w-full p-4 border-green-700 border-2 rounded-2xl">
       <Title className="w-full">{stake.voteTitle}</Title>
       <Divider className="mt-1 mb-2" />
-      <Text>Option: {Number(stake.option) + 1}</Text>
+      <Text>Option: {Number(stake.voteOption) + 1}</Text>
       <Text className="mt-2">
         Staked {stake.stakes} for {stake.votes} votes
       </Text>

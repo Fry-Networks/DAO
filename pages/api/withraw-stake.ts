@@ -112,7 +112,7 @@ export async function withdraw(stakeInfo: Stake) {
     const noteInformation = {
       voteTitle: stakeInfo.voteTitle,
       address: stakeInfo.address,
-      option: stakeInfo.option,
+      voteOption: stakeInfo.voteOption,
       votes: stakeInfo.votes,
       amount: stakeInfo.stakes
     };
@@ -172,7 +172,7 @@ export default async function handler(
     const result = (await collection.findOne({
       address: address,
       voteTitle: data.voteTitle,
-      option: data.option,
+      voteOption: data.voteOption,
       assetId: data.assetId
     })) as Stake;
 
@@ -203,7 +203,7 @@ export default async function handler(
         address: address,
         voteTitle: data.voteTitle,
         assetId: data.assetId,
-        option: data.option
+        voteOption: data.voteOption
       },
       {
         $set: {

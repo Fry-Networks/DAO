@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 export interface Stake extends mongoose.Document {
   voteTitle: string;
-  option: string;
+  voteOption: string;
   address: string;
   end_date: Date;
   stakes: number;
@@ -13,7 +13,7 @@ export interface Stake extends mongoose.Document {
 
 export const stakeSchema = new mongoose.Schema({
   voteTitle: String,
-  option: String,
+  voteOption: String,
   address: String,
   end_date: Date,
   stakes: Number,

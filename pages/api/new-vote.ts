@@ -100,7 +100,7 @@ export default async function handler(
       await stakeCollection.updateOne(
         {
           voteTitle: currentVote.title,
-          option: index.toString(),
+          voteOptioin: index.toString(),
           address: sender,
           assetId: assetId
         },
