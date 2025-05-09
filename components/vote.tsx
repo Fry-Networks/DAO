@@ -37,6 +37,7 @@ export default function ModalVote({
 }) {
   const { activeAddress, signTransactions, sendTransactions } = useWallet();
   const [updateSuccess, setUpdateSuccess] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
   const sendTransaction = async (
     from?: string,
     to?: string,
@@ -76,6 +77,7 @@ export default function ModalVote({
   const [voteValue, setVoteValue] = useState(1);
 
   const handleVote = async (index: number, value: number) => {
+    setIsProcessing(true);
     console.log(`Voted ${value} votes for ${vote.title}`);
     const txId = await sendTransaction(
       activeAddress,
@@ -101,12 +103,14 @@ export default function ModalVote({
       if (!response.ok) {
         setUpdateSuccess('error'); // Reset success state
         setTimeout(() => setUpdateSuccess(''), 30_000);
+        setIsProcessing(false);
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
     } else {
       setUpdateSuccess('error');
       setTimeout(() => setUpdateSuccess(''), 30_000);
     }
+    setIsProcessing(false);
   };
 
   return (
@@ -168,7 +172,9 @@ export default function ModalVote({
           <Button
             className="mt-4"
             color="blue"
-            disabled={!(Number.isInteger(voteValue) && voteValue >= 1)}
+            disabled={
+              isProcessing || !(Number.isInteger(voteValue) && voteValue >= 1)
+            }
             onClick={async (e) => {
               e.preventDefault();
               await handleVote(vote.index, voteValue);
