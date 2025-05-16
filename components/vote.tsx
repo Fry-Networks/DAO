@@ -31,7 +31,12 @@ export default function ModalVote({
 }: {
   isOpen: boolean;
   setIsOpen: Function;
-  vote: { index: number; title: string; description: string };
+  vote: {
+    vote_index: number;
+    index: number;
+    title: string;
+    description: string;
+  };
   price: Price | null;
   priceValue: number;
 }) {
@@ -97,7 +102,13 @@ export default function ModalVote({
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ index, txId, priceValue, assetId })
+        body: JSON.stringify({
+          vote_index: vote.vote_index,
+          index,
+          txId,
+          priceValue,
+          assetId
+        })
       });
 
       if (!response.ok) {

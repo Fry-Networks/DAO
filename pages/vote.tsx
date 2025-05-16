@@ -25,119 +25,134 @@ export default function VotePage({
   price,
   priceValue
 }: {
-  vote_data: Vote | null;
+  vote_data: Vote[] | null;
   price: Price | null;
   priceValue: number;
 }) {
   const { providers, activeAccount } = useWallet();
-  const [openModalId, setOpenModalId] = useState(null as number | null);
+  const [openModalId, setOpenModalId] = useState<null | string>(null);
 
   const handleCloseModal = (index: number) => {
     setOpenModalId(null);
   };
-  const totalVotes = vote_data?.votes.reduce(
-    (acc, vote) => acc + vote.votes,
-    0
-  );
+
   return (
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
-      {vote_data !== null ? (
-        <Flex flexDirection="col" justifyContent="center" alignItems="center">
-          <Title>{vote_data.title}</Title>
-          <div
-            className="markdown-content mb-3"
-            dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(vote_data.description)
-            }}
-          />
-          Will be closed on {new Date(vote_data.end_date).toLocaleString()} UTC
-          {vote_data.super_majority && (
-            <p className="font-bold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-              This vote requires a super majority: in order to pass, one option
-              should receive more than half the votes
-            </p>
-          )}
-          <Divider />
-          <Flex
-            flexDirection="row"
-            justifyContent="center"
-            alignItems="center"
-            className="mt-5"
-          >
-            <Icon
-              icon={EyeSlashIcon}
-              size="xl"
-              tooltip="Votes are currently hidden and will be revealed at the end of the FIP"
-            ></Icon>
-            <Title>Hidden votes</Title>
-          </Flex>
-          <Flex className="grid grid-cols-2 gap-4">
-            {activeAccount ? (
-              vote_data.votes.map((vote, index) => {
-                const percent = Math.round((vote.votes / totalVotes!) * 100);
-                return (
-                  <Card key={index} className="mt-5">
-                    <Flex
-                      flexDirection="col"
-                      justifyContent="center"
-                      alignItems="center"
-                    >
-                      <Title>{vote.title}</Title>
-                      <div
-                        className="markdown-content mb-3"
-                        dangerouslySetInnerHTML={{
-                          __html: DOMPurify.sanitize(vote.description)
-                        }}
-                      />
-
-                      {!vote_data.hidden && (
+      {vote_data && vote_data.length > 0 ? (
+        vote_data.map((vote, voteIdx) => {
+          const totalVotes = vote?.votes.reduce(
+            (acc, vote) => acc + vote.votes,
+            0
+          );
+          return (
+            <Flex
+              flexDirection="col"
+              justifyContent="center"
+              alignItems="center"
+              className="mb-8"
+            >
+              <Title>{vote.title}</Title>
+              <div
+                className="markdown-content mb-3"
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(vote.description)
+                }}
+              />
+              Will be closed on {new Date(vote.end_date).toLocaleString()} UTC
+              {vote.super_majority && (
+                <p className="font-bold text-tremor-content-strong dark:text-dark-tremor-content-strong">
+                  This vote requires a super majority: in order to pass, one
+                  option should receive more than half the votes
+                </p>
+              )}
+              <Divider />
+              <Flex
+                flexDirection="row"
+                justifyContent="center"
+                alignItems="center"
+                className="mt-5"
+              >
+                <Icon
+                  icon={EyeSlashIcon}
+                  size="xl"
+                  tooltip="Votes are currently hidden and will be revealed at the end of the FIP"
+                ></Icon>
+                <Title>Hidden votes</Title>
+              </Flex>
+              <Flex className="grid grid-cols-2 gap-4">
+                {activeAccount ? (
+                  vote.votes.map((option, index) => {
+                    const voteKey = `${voteIdx}-${index}`;
+                    const percent = Math.round(
+                      (option.votes / totalVotes!) * 100
+                    );
+                    return (
+                      <Card key={index} className="mt-5">
                         <Flex
-                          flexDirection="row"
-                          justifyContent="between"
+                          flexDirection="col"
+                          justifyContent="center"
                           alignItems="center"
                         >
-                          <span>
-                            {vote.votes} votes &bull; {percent ? percent : 0}%
-                          </span>
-                          <span>{totalVotes} votes in total</span>
+                          <Title>{vote.title}</Title>
+                          <div
+                            className="markdown-content mb-3"
+                            dangerouslySetInnerHTML={{
+                              __html: DOMPurify.sanitize(vote.description)
+                            }}
+                          />
+
+                          {!vote.hidden && (
+                            <Flex
+                              flexDirection="row"
+                              justifyContent="between"
+                              alignItems="center"
+                            >
+                              <span>
+                                {option.votes} votes &bull;{' '}
+                                {percent ? percent : 0}%
+                              </span>
+                              <span>{totalVotes} votes in total</span>
+                            </Flex>
+                          )}
+                          <ProgressBar
+                            value={percent}
+                            color={colors[index]}
+                            className="mt-3"
+                          />
+                          <Button
+                            className="mt-2"
+                            color={colors[index]}
+                            size="lg"
+                            onClick={() => setOpenModalId(voteKey)}
+                          >
+                            Vote
+                          </Button>
+                          <ModalVote
+                            key={index}
+                            isOpen={openModalId === voteKey}
+                            setIsOpen={handleCloseModal}
+                            vote={{
+                              vote_index: voteIdx,
+                              index: index,
+                              title: vote.title,
+                              description: vote.description
+                            }}
+                            price={price}
+                            priceValue={priceValue}
+                          />
                         </Flex>
-                      )}
-                      <ProgressBar
-                        value={percent}
-                        color={colors[index]}
-                        className="mt-3"
-                      />
-                      <Button
-                        className="mt-2"
-                        color={colors[index]}
-                        size="lg"
-                        onClick={() => setOpenModalId(index)}
-                      >
-                        Vote
-                      </Button>
-                      <ModalVote
-                        key={index}
-                        isOpen={openModalId === index}
-                        setIsOpen={handleCloseModal}
-                        vote={{
-                          index: index,
-                          title: vote.title,
-                          description: vote.description
-                        }}
-                        price={price}
-                        priceValue={priceValue}
-                      />
-                    </Flex>
-                  </Card>
-                );
-              })
-            ) : (
-              <p style={{ marginTop: '15px' }}>
-                You need to connect your wallet to vote!
-              </p>
-            )}
-          </Flex>
-        </Flex>
+                      </Card>
+                    );
+                  })
+                ) : (
+                  <p style={{ marginTop: '15px' }}>
+                    You need to connect your wallet to vote!
+                  </p>
+                )}
+              </Flex>
+            </Flex>
+          );
+        })
       ) : (
         <p>No active vote found</p>
       )}
@@ -184,19 +199,17 @@ export async function getServerSideProps(context: any) {
 
     const priceValue = await getPriceOfAsset(price);
 
-    const vote = (
-      await db
-        .collection(testMode ? 'test-dao' : 'dao')
-        .find({ current: true })
-        .toArray()
-    )[0] as Vote;
+    const votes = (await db
+      .collection(testMode ? 'test-dao' : 'dao')
+      .find({ current: true })
+      .toArray()) as Vote[];
 
     console.log(priceValue);
 
-    if (!vote) {
+    if (!votes || votes.length === 0) {
       return {
         props: {
-          vote_data: null,
+          vote_data: [],
           price: price ? JSON.parse(JSON.stringify(price)) : null,
           priceValue: priceValue
         }
@@ -206,28 +219,36 @@ export async function getServerSideProps(context: any) {
         const rawHTML = marked.parse(markdown) as string;
         return rawHTML;
       };
-      const vote_descriptions = await Promise.all(
-        vote.votes.map(async (vote_option: any) => {
-          return await renderMarkdown(vote_option.description);
-        })
-      );
-      const data = {
-        title: vote.title,
-        description: await renderMarkdown(vote.description),
-        super_majority: vote.super_majority,
-        end_date: vote.end_date,
-        hidden: vote.hidden,
-        votes: vote.votes.map((vote_option) => {
+      //
+
+      const vote_data = await Promise.all(
+        votes.map(async (vote) => {
+          const vote_descriptions = await Promise.all(
+            vote.votes.map(async (vote_option: any) => {
+              return await renderMarkdown(vote_option.description);
+            })
+          );
+
           return {
-            title: vote_option.title,
-            description: vote_descriptions[vote.votes.indexOf(vote_option)],
-            votes: vote.hidden ? 0 : vote_option.votes
+            title: vote.title,
+            description: await renderMarkdown(vote.description),
+            super_majority: vote.super_majority,
+            end_date: vote.end_date,
+            hidden: vote.hidden,
+            votes: vote.votes.map((vote_option) => {
+              return {
+                title: vote_option.title,
+                description: vote_descriptions[vote.votes.indexOf(vote_option)],
+                votes: vote.hidden ? 0 : vote_option.votes
+              };
+            })
           };
         })
-      };
+      );
+
       return {
         props: {
-          vote_data: JSON.parse(JSON.stringify(data)),
+          vote_data: JSON.parse(JSON.stringify(vote_data)),
           price: price ? JSON.parse(JSON.stringify(price)) : null,
           priceValue: priceValue
         }
