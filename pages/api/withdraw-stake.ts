@@ -214,7 +214,7 @@ export default async function handler(
 
     const withdrawResult = await withdraw(data);
     res.status(200).json({
-      success: withdrawResult.length ? true : false,
+      success: withdrawResult.length > 0 ? true : false,
       message: withdrawResult
     });
   } catch (error) {

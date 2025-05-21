@@ -17,13 +17,14 @@ export default async function handler(
   res: NextApiResponse
 ) {
   const data: {
+    vote_index: number;
     index: number;
     txId: string;
     priceValue: number;
     assetId: string;
   } = req.body;
 
-  const { index, txId, priceValue, assetId } = data;
+  const { vote_index, index, txId, priceValue, assetId } = data;
   const testMode = process.env.NEXT_PUBLIC_TEST === 'true' ? true : false;
   try {
     let retries = 0;
@@ -60,7 +61,9 @@ export default async function handler(
     const stakeCollection = db.collection(
       testMode ? 'test-dao-stakes' : 'dao-stakes'
     );
-    const currentVote = await collection.findOne({ current: true });
+    const currentVote = (await collection.find({ current: true }).toArray())[
+      vote_index
+    ];
     if (!currentVote) {
       throw new Error('No active vote found');
     }
