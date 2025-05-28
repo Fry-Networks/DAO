@@ -192,7 +192,7 @@ export default async function handler(
       return;
     }
 
-    if (data.withdraw) {
+    if (result.withdraw) {
       console.log('User is already withdrawed the stake token');
       res.status(200).json({ success: false, message: 'Already withdrawed.' });
       return;
