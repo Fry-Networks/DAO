@@ -160,7 +160,7 @@ export default function VotePage({
   );
 }
 
-const algoURL = 'https://free-api.vestige.fi/currency/prices';
+const algoURL = 'https://api.vestigelabs.org/assets/price?asset_ids=0';
 let currentFRYPrice = {
   lastFetched: 0,
   price: 0
@@ -173,10 +173,15 @@ let currentAlgoPrice = {
 async function getPriceOfAsset(price: Price) {
   if (price && price.isUSD) {
     const FRYVerID = price?.asset_id ?? 2485314946;
-    const fryURL = `https://free-api.vestige.fi/asset/${FRYVerID}/price`;
+    const fryURL = `https://api.vestigelabs.org/assets/price?asset_ids=${FRYVerID}`;
     if (Date.now() - currentFRYPrice.lastFetched > 1000 * 60 * 1) {
       const response = await axios.get(fryURL);
-      currentFRYPrice.price = response.data.USD;
+      if (!response.data || response.data.length === 0) {
+        console.error("Failed to fetch FRY price data");
+        return currentFRYPrice.price;
+      }
+      const price = parseFloat(response.data[0].price) * 2 / 10;
+      currentFRYPrice.price = parseFloat(price.toFixed(6));
       currentFRYPrice.lastFetched = Date.now();
     }
     console.log(currentFRYPrice.price);
