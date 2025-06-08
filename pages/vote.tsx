@@ -93,11 +93,11 @@ export default function VotePage({
                           justifyContent="center"
                           alignItems="center"
                         >
-                          <Title>{vote.title}</Title>
+                          <Title>{option.title}</Title>
                           <div
                             className="markdown-content mb-3"
                             dangerouslySetInnerHTML={{
-                              __html: DOMPurify.sanitize(vote.description)
+                              __html: DOMPurify.sanitize(option.description)
                             }}
                           />
 
