@@ -135,7 +135,8 @@ export default function VotePage({
                               vote_index: voteIdx,
                               index: index,
                               title: vote.title,
-                              description: vote.description
+                              description: option.description,
+                              optionTitle: option.title
                             }}
                             price={price}
                             priceValue={priceValue}
