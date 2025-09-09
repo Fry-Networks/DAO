@@ -14,6 +14,7 @@ import { useWallet } from '@txnlab/use-wallet';
 import { set } from 'mongoose';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import { Price } from '../lib/price-schema';
+import DOMPurify from 'dompurify';
 const algodClient = new algosdk.Algodv2(
   '',
   'https://mainnet-api.algonode.cloud',
@@ -36,6 +37,7 @@ export default function ModalVote({
     index: number;
     title: string;
     description: string;
+    optionTitle: string;
   };
   price: Price | null;
   priceValue: number;
@@ -164,11 +166,14 @@ export default function ModalVote({
         )}
         <form action="#" method="POST">
           <h4 className="font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-            Vote for {vote.title}
+            Vote for {vote.title} — Option: {vote.optionTitle}
           </h4>
-          <p className="text-tremor-content-subtle dark:text-dark-tremor-content-subtle">
-            {vote.description}
-          </p>
+          <div
+            className="text-tremor-content-subtle dark:text-dark-tremor-content-subtle"
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(vote.description)
+            }}
+          />
           <Divider />
 
           <NumberInput
