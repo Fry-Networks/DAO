@@ -11,7 +11,8 @@ const navigation = [
   { name: 'Vote', href: '/vote' },
   { name: 'Last Vote', href: '/lastvote' },
   { name: 'All Votes', href: '/allvotes' },
-  { name: 'My Stakes', href: '/stakes' }
+  { name: 'My Stakes', href: '/stakes' },
+  { name: 'Community Proposals', href: '/cfip' }
 ];
 
 function classNames(...classes: string[]) {
