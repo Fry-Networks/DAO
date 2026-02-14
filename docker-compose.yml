@@ -1,0 +1,91 @@
+services:
+  dao:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dao:prod
+    container_name: dao
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3012:3012"
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: "--disable-warning=DEP0060"
+      PORT: "3012"
+      NEXT_PUBLIC_TEST: "${NEXT_PUBLIC_TEST:-false}"
+      MONGO_CA_CERT_PATH: "/etc/ssl/mongo/mongo-ca.crt"
+      MONGO_URI: "op://DAO/DAO/MONGO_URI"
+      VOTE_WALLET_SECRET: "op://DAO/DAO/VOTE_WALLET_SECRET"
+    command: ["npm", "start"]
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"require('http').get('http://127.0.0.1:3012/api/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1));\""
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    volumes:
+      - ${MONGO_CA_CERT_PATH:-/etc/ssl/mongo/mongo-ca.crt}:/etc/ssl/mongo/mongo-ca.crt:ro
+    secrets:
+      - source: op_service_account_token
+        target: op_service_account_token
+    read_only: true
+    tmpfs:
+      - /tmp:uid=1001,gid=1001,mode=1777
+      - /app/.next/cache:uid=1001,gid=1001,mode=0755
+      - /home/appuser/.config:uid=1001,gid=1001,mode=0700
+      - /home/appuser/.npm:uid=1001,gid=1001,mode=0700
+    security_opt:
+      - no-new-privileges:true
+    cap_add:
+      - SETUID
+      - SETGID
+    cap_drop:
+      - ALL
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  dao_expire:
+    build:
+      context: ../DAO_expire
+      dockerfile: Dockerfile
+    image: dao_expire:prod
+    container_name: dao_expire
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      MONGO_CA_CERT_PATH: "/etc/ssl/mongo/mongo-ca.crt"
+      MONGO_URI: "op://DAO/DAO/MONGO_URI"
+    command: ["npm", "run", "start"]
+    volumes:
+      - ${MONGO_CA_CERT_PATH:-/etc/ssl/mongo/mongo-ca.crt}:/etc/ssl/mongo/mongo-ca.crt:ro
+    secrets:
+      - source: op_service_account_token
+        target: op_service_account_token
+    read_only: true
+    tmpfs:
+      - /tmp:uid=1001,gid=1001,mode=1777
+      - /home/appuser/.config:uid=1001,gid=1001,mode=0700
+      - /home/appuser/.npm:uid=1001,gid=1001,mode=0700
+    security_opt:
+      - no-new-privileges:true
+    cap_add:
+      - SETUID
+      - SETGID
+    cap_drop:
+      - ALL
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+secrets:
+  op_service_account_token:
+    file: /etc/opt/dao/op_service_account_token
