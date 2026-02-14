@@ -1,7 +1,7 @@
 import { Button, Divider, Flex, Text, Title } from '@tremor/react';
 import { Stake } from '../lib/stake-schema';
 import { useEffect, useState } from 'react';
-import { useWallet } from '@txnlab/use-wallet';
+import { useWallet } from '../lib/use-wallet-compat';
 
 interface TimeLeft {
   totalMilliseconds: number;

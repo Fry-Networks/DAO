@@ -1,5 +1,5 @@
 import React from 'react'
-import { useWallet } from '@txnlab/use-wallet'
+import { useWallet } from '../lib/use-wallet-compat'
 import { Button, Flex, Select } from '@tremor/react'
 
 export default function ConnectMenu() {

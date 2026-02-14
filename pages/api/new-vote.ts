@@ -1,7 +1,4 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import axios from 'axios';
-import { getServerSession } from 'next-auth';
-import { authOptions } from './auth/[...nextauth]';
 import algosdk from 'algosdk';
 import clientPromise from '../../lib/mongoclient';
 const algodClient = new algosdk.Algodv2(
@@ -32,7 +29,7 @@ export default async function handler(
     let transactionInfo = await algodClient
       .pendingTransactionInformation(txId)
       .do();
-    while (!transactionInfo['confirmed-round'] && retries < 5) {
+    while (!transactionInfo.confirmedRound && retries < 5) {
       await new Promise((resolve) => setTimeout(resolve, 5000));
       console.log('Retrying transaction info...');
       transactionInfo = await algodClient
@@ -41,21 +38,30 @@ export default async function handler(
       console.log(transactionInfo);
       retries++;
     }
-    if (!transactionInfo['confirmed-round']) {
+    if (!transactionInfo.confirmedRound) {
       throw new Error('Transaction not confirmed');
     }
     console.log(
       'Transaction confirmed in round: ',
-      transactionInfo['confirmed-round']
+      transactionInfo.confirmedRound
     );
-    const note = Buffer.from(transactionInfo.txn.txn.note).toString();
+
+    const txn = transactionInfo.txn?.txn;
+    if (!txn) {
+      throw new Error('Transaction payload missing');
+    }
+
+    const note = Buffer.from(txn.note ?? new Uint8Array()).toString();
     const voteIndex = note.split('-')[0];
-    if (parseInt(voteIndex) !== index) {
+    if (parseInt(voteIndex, 10) !== index) {
       throw new Error('Invalid vote index');
     }
-    const assetAmount = transactionInfo.txn.txn.aamt;
+    const assetAmount = Number(txn.assetTransfer?.amount ?? 0);
+    if (!assetAmount) {
+      throw new Error('Asset amount missing from transaction');
+    }
     const votes = assetAmount / 1e6 / priceValue;
-    const client = await clientPromise;
+    const client = await clientPromise();
     const db = client.db();
     const collection = db.collection(testMode ? 'test-dao' : 'dao');
     const stakeCollection = db.collection(
@@ -67,7 +73,7 @@ export default async function handler(
     if (!currentVote) {
       throw new Error('No active vote found');
     }
-    const sender = algosdk.encodeAddress(transactionInfo.txn.txn.snd);
+    const sender = txn.sender.toString();
     console.log('Sender: ', sender);
 
     const newUser =
@@ -103,7 +109,7 @@ export default async function handler(
       await stakeCollection.updateOne(
         {
           voteTitle: currentVote.title,
-          voteOptioin: index.toString(),
+          voteOption: index.toString(),
           address: sender,
           assetId: assetId
         },

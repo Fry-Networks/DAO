@@ -2,7 +2,7 @@ import { Callout, Flex } from '@tremor/react';
 import clientPromise from '../lib/mongoclient';
 import { Stake } from '../lib/stake-schema';
 import { Vote } from '../lib/vote-schema';
-import { useWallet } from '@txnlab/use-wallet';
+import { useWallet } from '../lib/use-wallet-compat';
 import { useEffect, useState } from 'react';
 import StakeItem from '../components/stake';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';

@@ -2,12 +2,11 @@ import { useState } from 'react';
 import { Button, Card, Divider, Flex, ProgressBar, Title } from '@tremor/react';
 import { Vote } from '../lib/vote-schema';
 import clientPromise from '../lib/mongoclient';
-import { useWallet } from '@txnlab/use-wallet';
 import { BarList } from '@tremor/react';
 import { RiCheckboxCircleFill } from '@remixicon/react';
 import { all } from 'axios';
-import marked from 'marked';
-import DOMPurify from 'dompurify';
+import { marked } from 'marked';
+import { sanitizeHtml } from '../lib/sanitize-html';
 
 const colors = ['green', 'blue', 'yellow', 'pink', 'purple'] as const;
 
@@ -92,7 +91,7 @@ export default function AllVotesPage({
                   <div
                     className="markdown-content mb-3"
                     dangerouslySetInnerHTML={{
-                      __html: DOMPurify.sanitize(vote_data.description)
+                      __html: sanitizeHtml(vote_data.description)
                     }}
                   />
 
@@ -138,7 +137,7 @@ export default function AllVotesPage({
                             <div
                               className="markdown-content mb-3"
                               dangerouslySetInnerHTML={{
-                                __html: DOMPurify.sanitize(vote.description)
+                                __html: sanitizeHtml(vote.description)
                               }}
                             />
 
@@ -192,7 +191,7 @@ export default function AllVotesPage({
 export async function getServerSideProps(context: any) {
   const testMode = process.env.NEXT_PUBLIC_TEST === 'true' ? true : false;
   try {
-    const client = await clientPromise;
+    const client = await clientPromise();
     const db = client.db('main');
 
     const votes = (await db

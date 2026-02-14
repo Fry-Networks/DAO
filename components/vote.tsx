@@ -10,11 +10,11 @@ import { Key, useState } from 'react';
 import algosdk from 'algosdk';
 import { Dialog, DialogPanel, Divider, TextInput } from '@tremor/react';
 import { RiCloseLine } from '@remixicon/react';
-import { useWallet } from '@txnlab/use-wallet';
+import { useWallet } from '../lib/use-wallet-compat';
 import { set } from 'mongoose';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import { Price } from '../lib/price-schema';
-import DOMPurify from 'dompurify';
+import { sanitizeHtml } from '../lib/sanitize-html';
 const algodClient = new algosdk.Algodv2(
   '',
   'https://mainnet-api.algonode.cloud',
@@ -46,8 +46,8 @@ export default function ModalVote({
   const [updateSuccess, setUpdateSuccess] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const sendTransaction = async (
-    from?: string,
-    to?: string,
+    from?: string | null,
+    to?: string | null,
     amount?: number
   ) => {
     try {
@@ -58,8 +58,8 @@ export default function ModalVote({
       const suggestedParams = await algodClient.getTransactionParams().do();
       const transaction =
         algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-          from,
-          to,
+          sender: from,
+          receiver: to,
           amount,
           note: new Uint8Array(
             Buffer.from(vote.index + '-Vote for ' + vote.title)
@@ -171,7 +171,7 @@ export default function ModalVote({
           <div
             className="text-tremor-content-subtle dark:text-dark-tremor-content-subtle"
             dangerouslySetInnerHTML={{
-              __html: DOMPurify.sanitize(vote.description)
+              __html: sanitizeHtml(vote.description)
             }}
           />
           <Divider />

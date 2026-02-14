@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import clientPromise from '../../lib/mongoclient';
 import { Stake } from '../../lib/stake-schema';
-import { getServerSession } from 'next-auth';
 
 export default async function handler(
   req: NextApiRequest,
@@ -17,7 +16,7 @@ export default async function handler(
   console.log(address);
 
   try {
-    const client = await clientPromise;
+    const client = await clientPromise();
     const db = client.db();
     const collection = db.collection(
       testMode ? 'test-dao-stakes' : 'dao-stakes'

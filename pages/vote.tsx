@@ -12,9 +12,9 @@ import clientPromise from '../lib/mongoclient';
 import { useState } from 'react';
 import ModalVote from '../components/vote';
 import { Dialog } from '@tremor/react';
-import { useWallet } from '@txnlab/use-wallet';
-import marked from 'marked';
-import DOMPurify from 'dompurify';
+import { useWallet } from '../lib/use-wallet-compat';
+import { marked } from 'marked';
+import { sanitizeHtml } from '../lib/sanitize-html';
 import { EyeSlashIcon } from '@heroicons/react/24/outline';
 import { Price } from '../lib/price-schema';
 import axios from 'axios';
@@ -55,7 +55,7 @@ export default function VotePage({
               <div
                 className="markdown-content mb-3"
                 dangerouslySetInnerHTML={{
-                  __html: DOMPurify.sanitize(vote.description)
+                  __html: sanitizeHtml(vote.description)
                 }}
               />
               Will be closed on {new Date(vote.end_date).toLocaleString()} UTC
@@ -97,7 +97,7 @@ export default function VotePage({
                           <div
                             className="markdown-content mb-3"
                             dangerouslySetInnerHTML={{
-                              __html: DOMPurify.sanitize(option.description)
+                              __html: sanitizeHtml(option.description)
                             }}
                           />
 
@@ -196,7 +196,7 @@ async function getPriceOfAsset(price: Price) {
 export async function getServerSideProps(context: any) {
   const testMode = process.env.NEXT_PUBLIC_TEST === 'true' ? true : false;
   try {
-    const client = await clientPromise;
+    const client = await clientPromise();
     const db = client.db('main');
 
     const price = (

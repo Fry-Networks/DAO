@@ -2,7 +2,6 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { Stake } from '../../lib/stake-schema';
 import clientPromise from '../../lib/mongoclient';
 import algosdk, { Indexer } from 'algosdk';
-import { flightRouterStateSchema } from 'next/dist/server/app-render/types';
 
 const calculateTimeLeft = (stake: Stake) => {
   const testMode = process.env.NEXT_PUBLIC_TEST === 'true' ? true : false;
@@ -37,31 +36,6 @@ const indexer = new Indexer(tokenToSend, indexServer, port);
 
 const FRYIndex = 2485314946;
 
-export interface Transaction {
-  'close-rewards': number;
-  'closing-amount': number;
-  'asset-transfer-transaction': {
-    amount: number;
-    'asset-id': number;
-  };
-  'confirmed-round': number;
-  fee: number;
-  'first-valid': number;
-  'genesis-hash': string;
-  'genesis-id': string;
-  id: string;
-  'intra-round-offset': number;
-  'last-valid': number;
-  note: string;
-  'payment-transaction': Object;
-  'receiver-rewards': number;
-  'round-time': number;
-  sender: string;
-  'sender-rewards': number;
-  signature: Object;
-  'tx-type': string;
-}
-
 export async function verifyTransaction(address: string, txId: string) {
   let checking = false;
   let checkingRetry = 0;
@@ -75,7 +49,7 @@ export async function verifyTransaction(address: string, txId: string) {
 
       if (lastTransactios !== undefined) {
         const targetTx = lastTransactios.transactions.find(
-          (transaction: Transaction) => {
+          (transaction) => {
             return transaction.id === txId;
           }
         );
@@ -121,8 +95,8 @@ export async function withdraw(stakeInfo: Stake) {
     const note = enc.encode(JSON.stringify(noteInformation));
 
     const txn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
-      from,
-      to: stakeInfo.address,
+      sender: from,
+      receiver: stakeInfo.address,
       amount: stakeInfo.stakes * 1_000_000,
       assetIndex: Number(stakeInfo.assetId ? stakeInfo.assetId : FRYIndex),
       note,
@@ -131,10 +105,10 @@ export async function withdraw(stakeInfo: Stake) {
 
     const signedTxn = txn.signTxn(account.sk);
     const tx = await algodClient.sendRawTransaction(signedTxn).do();
-    const checking = await verifyTransaction(stakeInfo.address, tx.txId);
+    const checking = await verifyTransaction(stakeInfo.address, tx.txid);
 
     if (checking) {
-      return tx.txId;
+      return tx.txid;
     }
 
     return '';
@@ -163,7 +137,7 @@ export default async function handler(
   }
 
   try {
-    const client = await clientPromise;
+    const client = await clientPromise();
     const db = client.db();
     const collection = db.collection(
       testMode ? 'test-dao-stakes' : 'dao-stakes'
