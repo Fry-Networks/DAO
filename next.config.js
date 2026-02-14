@@ -1,11 +1,26 @@
+const { webpackFallback } = require('@txnlab/use-wallet');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['avatars.githubusercontent.com', 'avatar.vercel.sh']
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com'
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatar.vercel.sh'
+      }
+    ]
   },
-  experimental: {
-    serverComponentsExternalPackages: ['@tremor/react'],
-    serverActions: true
+  webpack: (config) => {
+    config.resolve = config.resolve || {};
+    config.resolve.fallback = {
+      ...(config.resolve.fallback || {}),
+      ...webpackFallback
+    };
+    return config;
   }
 };
 
