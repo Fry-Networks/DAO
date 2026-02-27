@@ -44,7 +44,28 @@ export default function ModalVote({
 }) {
   const { activeAddress, signTransactions, sendTransactions } = useWallet();
   const [updateSuccess, setUpdateSuccess] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const getWalletErrorMessage = (error: unknown): string => {
+    const msg =
+      error instanceof Error ? error.message : String(error);
+    const lower = msg.toLowerCase();
+    if (lower.includes('reject') || lower.includes('cancel') || lower.includes('dismissed')) {
+      return 'Transaction was cancelled.';
+    }
+    if (lower.includes('insufficient') || lower.includes('overspend') || lower.includes('below min')) {
+      return 'Insufficient FRY balance to complete this vote.';
+    }
+    if (lower.includes('session') || lower.includes('disconnect') || lower.includes('not connected')) {
+      return 'Wallet disconnected — please reconnect and try again.';
+    }
+    if (lower.includes('network') || lower.includes('timeout') || lower.includes('fetch')) {
+      return 'Network error — please check your connection and try again.';
+    }
+    return msg || 'An unknown error occurred.';
+  };
+
   const sendTransaction = async (
     from?: string | null,
     to?: string | null,
@@ -78,7 +99,13 @@ export default function ModalVote({
       console.log('Successfully sent transaction. Transaction ID: ', id);
       return id;
     } catch (error) {
-      console.error(error);
+      console.error('[vote] sendTransaction failed:', {
+        name: error instanceof Error ? error.name : typeof error,
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      });
+      setErrorMessage(getWalletErrorMessage(error));
+      return undefined;
     }
   };
   const [voteValue, setVoteValue] = useState(1);
@@ -114,10 +141,12 @@ export default function ModalVote({
       });
 
       if (!response.ok) {
-        setUpdateSuccess('error'); // Reset success state
+        const body = await response.json().catch(() => ({}));
+        setErrorMessage(body.detail || `Server error (${response.status}). Please try again.`);
+        setUpdateSuccess('error');
         setTimeout(() => setUpdateSuccess(''), 30_000);
         setIsProcessing(false);
-        throw new Error(`HTTP error! Status: ${response.status}`);
+        return;
       }
     } else {
       setUpdateSuccess('error');
@@ -161,7 +190,7 @@ export default function ModalVote({
             icon={CheckCircleIcon}
             color="red"
           >
-            Error sending transaction. Please contact us before trying again !!
+            {errorMessage || 'Error sending transaction. Please contact us before trying again.'}
           </Callout>
         )}
         <form action="#" method="POST">

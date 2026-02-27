@@ -69,7 +69,17 @@ export function WalletProvider({
   useEffect(() => {
     if (!managerRef.current) {
       const manager = new WalletManager({
-        wallets: value.providers.map((provider) => provider.id) as SupportedWallet[]
+        wallets: value.providers.map((provider) => provider.id) as SupportedWallet[],
+        defaultNetwork: 'mainnet',
+        networks: {
+          mainnet: {
+            algod: {
+              token: '',
+              baseServer: 'https://mainnet-api.algonode.cloud'
+            }
+          }
+        },
+        options: { resetNetwork: true }
       });
       managerRef.current = manager;
       setIsReady(true);

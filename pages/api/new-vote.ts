@@ -24,26 +24,14 @@ export default async function handler(
   const { vote_index, index, txId, priceValue, assetId } = data;
   const testMode = process.env.NEXT_PUBLIC_TEST === 'true' ? true : false;
   try {
-    let retries = 0;
-    console.log('Checking transaction info for txId: ', txId);
-    let transactionInfo = await algodClient
-      .pendingTransactionInformation(txId)
-      .do();
-    while (!transactionInfo.confirmedRound && retries < 5) {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      console.log('Retrying transaction info...');
-      transactionInfo = await algodClient
-        .pendingTransactionInformation(txId)
-        .do();
-      console.log(transactionInfo);
-      retries++;
-    }
-    if (!transactionInfo.confirmedRound) {
-      throw new Error('Transaction not confirmed');
+    console.log('[new-vote] Checking transaction info for txId:', txId);
+    const transactionInfo = await algosdk.waitForConfirmation(algodClient, txId, 5);
+    if (transactionInfo.confirmedRound === undefined) {
+      throw new Error('Transaction not confirmed after 5 rounds');
     }
     console.log(
-      'Transaction confirmed in round: ',
-      transactionInfo.confirmedRound
+      '[new-vote] Transaction confirmed in round:',
+      transactionInfo.confirmedRound.toString()
     );
 
     const txn = transactionInfo.txn?.txn;
@@ -56,9 +44,10 @@ export default async function handler(
     if (parseInt(voteIndex, 10) !== index) {
       throw new Error('Invalid vote index');
     }
-    const assetAmount = Number(txn.assetTransfer?.amount ?? 0);
-    if (!assetAmount) {
-      throw new Error('Asset amount missing from transaction');
+    const rawAmount = txn.assetTransfer?.amount;
+    const assetAmount = typeof rawAmount === 'bigint' ? Number(rawAmount) : Number(rawAmount ?? 0);
+    if (!assetAmount || !Number.isFinite(assetAmount)) {
+      throw new Error('Asset amount missing or invalid in transaction');
     }
     const votes = assetAmount / 1e6 / priceValue;
     const client = await clientPromise();
@@ -74,7 +63,7 @@ export default async function handler(
       throw new Error('No active vote found');
     }
     const sender = txn.sender.toString();
-    console.log('Sender: ', sender);
+    console.log('[new-vote] Sender:', sender);
 
     const newUser =
       currentVote.votes[index].different_people.indexOf(sender) === -1;
@@ -122,7 +111,11 @@ export default async function handler(
 
     res.status(200).json({ message: 'ok' });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: 'error' });
+    const errMsg = error instanceof Error ? error.message : String(error);
+    console.error(`[new-vote] Error processing vote for txId=${data.txId}: ${errMsg}`);
+    if (error instanceof Error && error.stack) {
+      console.error(error.stack);
+    }
+    res.status(500).json({ message: 'error', detail: errMsg });
   }
 }
