@@ -5,51 +5,66 @@ import { Button, Flex, Select } from '@tremor/react'
 export default function ConnectMenu() {
     const { providers, activeAccount } = useWallet()
     return (
-        <Flex flexDirection='col' justifyContent='between' alignItems='center'>
-            <Flex flexDirection='row' justifyContent='between' alignItems='center'>
+        <Flex flexDirection='col' justifyContent='between' alignItems='center' className="gap-4">
+            <Flex flexDirection='row' justifyContent='center' alignItems='center' className="gap-8 flex-wrap">
                 {providers?.filter(provider => {
                     return activeAccount ? provider.metadata.id == activeAccount.providerId : true
                 }).map((provider) => (
-                    <Flex key={provider.metadata.id} flexDirection='col' justifyContent='center' alignItems='center'>
-
-
+                    <Flex 
+                        key={provider.metadata.id} 
+                        flexDirection='col' 
+                        justifyContent='center' 
+                        alignItems='center'
+                        className="bg-[#1e1e1e] p-6 rounded-xl border border-[#333333] gap-3"
+                    >
                         <img
-                            width={30}
-                            height={30}
+                            width={48}
+                            height={48}
                             alt={`${provider.metadata.name} icon`}
                             src={provider.metadata.icon}
+                            className="rounded-lg"
                         />
-                        {provider.metadata.name}
-                        <Button className='mb-2' onClick={provider.connect} disabled={provider.isConnected || !!activeAccount} color={provider.isConnected ? 'green' : 'blue'}>
+                        <span className="text-[#e0e0e0] font-medium">{provider.metadata.name}</span>
+                        <Button 
+                            className='mb-2' 
+                            onClick={provider.connect} 
+                            disabled={provider.isConnected || !!activeAccount} 
+                            color={provider.isConnected ? 'emerald' : 'sky'}
+                        >
                             {provider.isConnected ? 'Connected' : 'Connect'}
                         </Button>
 
                         {provider.isActive && provider.accounts.length && (
                             <>
-                             <Button onClick={provider.disconnect} disabled={!provider.isConnected} color='red' className='mb-2'>
-                             Disconnect
-                           </Button>
-                            <Select
-                                value={activeAccount?.address}
-                                onValueChange={(value) => provider.setActiveAccount(value)}
-                            >
-                                {provider.accounts.map((account) => (
-                                    <option key={account.address} value={account.address}>
-                                        {account.address}
-                                    </option>
-                                ))}
-                            </Select>
+                                <Button 
+                                    onClick={provider.disconnect} 
+                                    disabled={!provider.isConnected} 
+                                    color='rose' 
+                                    className='mb-2'
+                                >
+                                    Disconnect
+                                </Button>
+                                <Select
+                                    value={activeAccount?.address}
+                                    onValueChange={(value) => provider.setActiveAccount(value)}
+                                    className="bg-[#1a1a1a] border-[#333333]"
+                                >
+                                    {provider.accounts.map((account) => (
+                                        <option key={account.address} value={account.address}>
+                                            {account.address}
+                                        </option>
+                                    ))}
+                                </Select>
                             </>
                         )}
-
-
                     </Flex>
-
                 ))}
-               
             </Flex>
-            {activeAccount && (<p style={{marginTop: "15px"}}>You are successfully connected and can now head to the Vote page to cast your vote!</p>)}
+            {activeAccount && (
+                <p className="text-emerald-400 mt-4 text-center">
+                    You are successfully connected and can now head to the Vote page to cast your vote!
+                </p>
+            )}
         </Flex>
-
     )
 }

@@ -19,7 +19,7 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
   return (
     <WalletProvider value={providers}>
       <Navbar />
-      <div id="main" className="w-full min-h-screen">
+      <div id="main" className="w-full min-h-screen bg-[#0f0f0f] text-[#e0e0e0]">
         <Component {...pageProps} />
       </div>
     </WalletProvider>

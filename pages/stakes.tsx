@@ -15,6 +15,7 @@ export default function StakePage() {
     message: string;
   }>({ success: false, message: '' });
   const testMode = process.env.NEXT_PUBLIC_TEST === 'true' ? true : false;
+
   useEffect(() => {
     const fetchStakes = async () => {
       if (activeAccount) {
@@ -52,20 +53,20 @@ export default function StakePage() {
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
       {updateSuccess.message != '' && updateSuccess.success != false && (
         <Callout
-          className="mt-4 mb-4"
+          className="mt-4 mb-4 bg-[#1e1e1e] border-emerald-500"
           title="Success"
           icon={CheckCircleIcon}
-          color="teal"
+          color="emerald"
         >
           {updateSuccess.message}
         </Callout>
       )}
       {updateSuccess.message != '' && updateSuccess.success == false && (
         <Callout
-          className="mt-4 mb-4"
+          className="mt-4 mb-4 bg-[#1e1e1e] border-rose-500"
           title="Error"
           icon={CheckCircleIcon}
-          color="red"
+          color="rose"
         >
           {updateSuccess.message}
         </Callout>
@@ -73,12 +74,12 @@ export default function StakePage() {
       {activeAccount ? (
         <Flex flexDirection="col" className="w-full gap-2">
           {stakes &&
-            stakes.map((stake) => {
-              return <StakeItem stake={stake} handleMessage={handleMessage} />;
+            stakes.map((stake, index) => {
+              return <StakeItem key={index} stake={stake} handleMessage={handleMessage} />;
             })}
         </Flex>
       ) : (
-        <p style={{ marginTop: '15px' }}>
+        <p className="text-[#999999] mt-4">
           You need to connect your wallet to check staking information!
         </p>
       )}
