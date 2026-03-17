@@ -19,7 +19,7 @@ import { EyeSlashIcon } from '@heroicons/react/24/outline';
 import { Price } from '../lib/price-schema';
 import axios from 'axios';
 
-const colors = ['emerald', 'sky', 'amber', 'rose', 'violet'] as const;
+const colors = ['emerald', 'rose', 'amber', 'violet', 'sky'] as const;
 
 export default function VotePage({
   vote_data,
@@ -53,18 +53,18 @@ export default function VotePage({
               alignItems="center"
               className="mb-8"
             >
-              <Title className="text-white">{vote.title}</Title>
+              <Title className="text-[var(--text-heading)]">{vote.title}</Title>
               <div
-                className="markdown-content mb-3 text-[#e0e0e0]"
+                className="markdown-content mb-3 text-[var(--text-primary)]"
                 dangerouslySetInnerHTML={{
                   __html: sanitizeHtml(vote.description)
                 }}
               />
-              <span className="text-[#999999]">
+              <span className="text-[var(--text-secondary)]">
                 Will be closed on {new Date(vote.end_date).toLocaleString()} UTC
               </span>
               {vote.super_majority && (
-                <p className="font-bold text-[#e0e0e0] mt-2">
+                <p className="font-bold text-[var(--text-primary)] mt-2">
                   This vote requires a super majority: in order to pass, one
                   option should receive more than half the votes
                 </p>
@@ -82,7 +82,7 @@ export default function VotePage({
                   color="slate"
                   tooltip="Votes are currently hidden and will be revealed at the end of the FIP"
                 ></Icon>
-                <Title className="text-[#999999]">Hidden votes</Title>
+                <Title className="text-[var(--text-secondary)]">Hidden votes</Title>
               </Flex>
               <Flex className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 {activeAccount ? (
@@ -92,15 +92,15 @@ export default function VotePage({
                       (option.votes / totalVotes!) * 100
                     );
                     return (
-                      <Card key={index} className="mt-5 bg-[#1e1e1e] border border-[#333333]">
+                      <Card key={index} className="mt-5 bg-[var(--bg-card)] border border-[var(--border-color)]">
                         <Flex
                           flexDirection="col"
                           justifyContent="center"
                           alignItems="center"
                         >
-                          <Title className="text-white">{option.title}</Title>
+                          <Title className="text-[var(--text-heading)]">{option.title}</Title>
                           <div
-                            className="markdown-content mb-3 text-[#e0e0e0]"
+                            className="markdown-content mb-3 text-[var(--text-primary)]"
                             dangerouslySetInnerHTML={{
                               __html: sanitizeHtml(option.description)
                             }}
@@ -111,7 +111,7 @@ export default function VotePage({
                               flexDirection="row"
                               justifyContent="between"
                               alignItems="center"
-                              className="w-full text-[#999999]"
+                              className="w-full text-[var(--text-secondary)]"
                             >
                               <span>
                                 {option.votes} votes &bull;{' '}
@@ -152,7 +152,7 @@ export default function VotePage({
                     );
                   })
                 ) : (
-                  <p className="text-[#999999] mt-4 col-span-2 text-center">
+                  <p className="text-[var(--text-secondary)] mt-4 col-span-2 text-center">
                     You need to connect your wallet to vote!
                   </p>
                 )}
@@ -161,7 +161,7 @@ export default function VotePage({
           );
         })
       ) : (
-        <p className="text-[#999999]">No active vote found</p>
+        <p className="text-[var(--text-secondary)]">No active vote found</p>
       )}
     </main>
   );

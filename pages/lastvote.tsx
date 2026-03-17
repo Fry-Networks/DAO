@@ -4,7 +4,7 @@ import clientPromise from '../lib/mongoclient';
 import { marked } from 'marked';
 import { sanitizeHtml } from '../lib/sanitize-html';
 
-const colors = ['emerald', 'sky', 'amber', 'rose', 'violet'] as const;
+const colors = ['emerald', 'rose', 'amber', 'violet', 'sky'] as const;
 
 export default function LastVotePage({
   vote_data
@@ -30,17 +30,17 @@ export default function LastVotePage({
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
       {vote_data !== null ? (
         <Flex flexDirection="col" justifyContent="center" alignItems="center">
-          <Title className="text-white">{vote_data.title}</Title>
+          <Title className="text-[var(--text-heading)]">{vote_data.title}</Title>
           <div
-            className="markdown-content mb-3 text-[#e0e0e0]"
+            className="markdown-content mb-3 text-[var(--text-primary)]"
             dangerouslySetInnerHTML={{
               __html: sanitizeHtml(vote_data.description)
             }}
           />
-          <span className="text-[#999999]">
+          <span className="text-[var(--text-secondary)]">
             Started on {new Date(vote_data.createdAt).toLocaleString()} UTC
           </span>
-          <span className="text-[#999999]">
+          <span className="text-[var(--text-secondary)]">
             Closed on {new Date(vote_data.end_date).toLocaleString()} UTC
           </span>
 
@@ -58,8 +58,8 @@ export default function LastVotePage({
                   key={index}
                   className={
                     vote.title === winnerVote?.title && hasWinner
-                      ? 'mt-5 border-4 border-emerald-500 bg-[#1e1e1e]'
-                      : 'mt-5 bg-[#1e1e1e] border border-[#333333]'
+                      ? 'mt-5 border-4 border-emerald-500 bg-[var(--bg-card)]'
+                      : 'mt-5 bg-[var(--bg-card)] border border-[var(--border-color)]'
                   }
                   decorationColor={
                     vote.title === winnerVote?.title && hasWinner
@@ -72,9 +72,9 @@ export default function LastVotePage({
                     justifyContent="center"
                     alignItems="center"
                   >
-                    <Title className="text-white">{vote.title}</Title>
+                    <Title className="text-[var(--text-heading)]">{vote.title}</Title>
                     <div
-                      className="markdown-content mb-3 text-[#e0e0e0]"
+                      className="markdown-content mb-3 text-[var(--text-primary)]"
                       dangerouslySetInnerHTML={{
                         __html: sanitizeHtml(vote.description)
                       }}
@@ -84,7 +84,7 @@ export default function LastVotePage({
                       flexDirection="row"
                       justifyContent="between"
                       alignItems="center"
-                      className="w-full text-[#999999]"
+                      className="w-full text-[var(--text-secondary)]"
                     >
                       <span>
                         {vote.votes} votes &bull; {percent ? percent : 0}%
@@ -95,7 +95,7 @@ export default function LastVotePage({
                       flexDirection="row"
                       justifyContent="between"
                       alignItems="center"
-                      className="w-full text-[#999999]"
+                      className="w-full text-[var(--text-secondary)]"
                     >
                       <span>{vote.different_people} wallets</span>
                       {/*@ts-ignore*/}
@@ -116,7 +116,7 @@ export default function LastVotePage({
           </Flex>
         </Flex>
       ) : (
-        <p className="text-[#999999]">No vote found</p>
+        <p className="text-[var(--text-secondary)]">No vote found</p>
       )}
     </main>
   );

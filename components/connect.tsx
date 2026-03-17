@@ -15,7 +15,7 @@ export default function ConnectMenu() {
                         flexDirection='col' 
                         justifyContent='center' 
                         alignItems='center'
-                        className="bg-[#1e1e1e] p-6 rounded-xl border border-[#333333] gap-3"
+                        className="bg-[var(--bg-card)] p-6 rounded-xl border border-[var(--border-color)] gap-3"
                     >
                         <img
                             width={48}
@@ -24,12 +24,12 @@ export default function ConnectMenu() {
                             src={provider.metadata.icon}
                             className="rounded-lg"
                         />
-                        <span className="text-[#e0e0e0] font-medium">{provider.metadata.name}</span>
+                        <span className="text-[var(--text-primary)] font-medium">{provider.metadata.name}</span>
                         <Button 
                             className='mb-2' 
                             onClick={provider.connect} 
                             disabled={provider.isConnected || !!activeAccount} 
-                            color={provider.isConnected ? 'emerald' : 'sky'}
+                            color={provider.isConnected ? 'emerald' : 'rose'}
                         >
                             {provider.isConnected ? 'Connected' : 'Connect'}
                         </Button>
@@ -39,7 +39,7 @@ export default function ConnectMenu() {
                                 <Button 
                                     onClick={provider.disconnect} 
                                     disabled={!provider.isConnected} 
-                                    color='rose' 
+                                    color='gray' 
                                     className='mb-2'
                                 >
                                     Disconnect
@@ -47,7 +47,7 @@ export default function ConnectMenu() {
                                 <Select
                                     value={activeAccount?.address}
                                     onValueChange={(value) => provider.setActiveAccount(value)}
-                                    className="bg-[#1a1a1a] border-[#333333]"
+                                    className="bg-[var(--bg-secondary)] border-[var(--border-color)]"
                                 >
                                     {provider.accounts.map((account) => (
                                         <option key={account.address} value={account.address}>

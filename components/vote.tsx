@@ -143,11 +143,11 @@ export default function ModalVote({
       static={true}
       className="z-[100]"
     >
-      <DialogPanel className="max-w-xl bg-[#1e1e1e] border border-[#333333] rounded-xl">
+      <DialogPanel className="max-w-xl bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl">
         <div className="absolute right-0 top-0 pr-3 pt-3">
           <button
             type="button"
-            className="rounded-lg p-2 text-[#999999] hover:bg-[#2a2a2a] hover:text-[#e0e0e0] transition-colors"
+            className="rounded-lg p-2 text-[var(--text-secondary)] hover:bg-[var(--bg-secondary)] hover:text-[var(--text-primary)] transition-colors"
             onClick={() => setIsOpen(false)}
             aria-label="Close"
           >
@@ -156,7 +156,7 @@ export default function ModalVote({
         </div>
         {updateSuccess != '' && updateSuccess != 'error' && (
           <Callout
-            className="mt-4 mb-4 bg-[#1a1a1a] border-emerald-500"
+            className="mt-4 mb-4 bg-[var(--bg-secondary)] border-emerald-500"
             title="Success"
             icon={CheckCircleIcon}
             color="emerald"
@@ -166,7 +166,7 @@ export default function ModalVote({
         )}
         {updateSuccess == 'error' && (
           <Callout
-            className="mt-4 mb-4 bg-[#1a1a1a] border-rose-500"
+            className="mt-4 mb-4 bg-[var(--bg-secondary)] border-rose-500"
             title="Error"
             icon={CheckCircleIcon}
             color="rose"
@@ -175,11 +175,11 @@ export default function ModalVote({
           </Callout>
         )}
         <form action="#" method="POST">
-          <h4 className="font-semibold text-white">
+          <h4 className="font-semibold text-[var(--text-heading)]">
             Vote for {vote.title} — Option: {vote.optionTitle}
           </h4>
           <div
-            className="text-[#999999] mt-2"
+            className="text-[var(--text-secondary)] mt-2"
             dangerouslySetInnerHTML={{
               __html: sanitizeHtml(vote.description)
             }}
@@ -193,12 +193,12 @@ export default function ModalVote({
             onValueChange={(value) => {
               setVoteValue(value);
             }}
-            className="bg-[#1a1a1a] border-[#333333]"
+            className="bg-[var(--bg-secondary)] border-[var(--border-color)]"
           />
 
           <Button
             className="mt-4"
-            color="sky"
+            color="rose"
             disabled={
               isProcessing || !(Number.isInteger(voteValue) && voteValue >= 1)
             }

@@ -12,38 +12,46 @@ export default {
     transparent: 'transparent',
     current: 'currentColor',
     extend: {
+      fontFamily: {
+        sans: ['Roboto', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+      },
       colors: {
-        // fry.farm dark theme
+        // Accent color (fry.farm red)
+        accent: {
+          DEFAULT: '#e74c3c',
+          hover: '#c0392b',
+          light: '#ff6b6b',
+        },
+        // Tremor tokens
         tremor: {
           brand: {
-            faint: '#1a1a1a', // dark subtle bg
-            muted: '#333333', // dark muted
-            subtle: '#999999', // muted text
-            DEFAULT: '#e0e0e0', // neutral accent
-            emphasis: '#ffffff', // white emphasis
-            inverted: '#0f0f0f' // dark background
+            faint: '#1a1a1a',
+            muted: '#333333',
+            subtle: '#999999',
+            DEFAULT: '#e0e0e0',
+            emphasis: '#ffffff',
+            inverted: '#0f0f0f'
           },
           background: {
-            muted: '#1a1a1a', // secondary dark bg
-            subtle: '#1e1e1e', // card bg
-            DEFAULT: '#0f0f0f', // primary dark bg
-            emphasis: '#333333' // emphasis dark
+            muted: '#1a1a1a',
+            subtle: '#1e1e1e',
+            DEFAULT: '#0f0f0f',
+            emphasis: '#333333'
           },
           border: {
-            DEFAULT: '#333333' // dark border
+            DEFAULT: '#333333'
           },
           ring: {
-            DEFAULT: '#333333' // dark ring
+            DEFAULT: '#333333'
           },
           content: {
-            subtle: '#777777', // very muted text
-            DEFAULT: '#999999', // secondary text
-            emphasis: '#cccccc', // brighter text
-            strong: '#e0e0e0', // primary text
-            inverted: '#0f0f0f' // dark text on light
+            subtle: '#777777',
+            DEFAULT: '#999999',
+            emphasis: '#cccccc',
+            strong: '#e0e0e0',
+            inverted: '#0f0f0f'
           }
         },
-        // Custom card background
         card: '#1e1e1e'
       },
       boxShadow: {
