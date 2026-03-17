@@ -54,11 +54,10 @@ export default function StakeItem({
       };
     }
 
-    // Roughly calculate months and days (simple version)
     const msInDay = 1000 * 60 * 60 * 24;
     const daysTotal = Math.floor(difference / msInDay);
 
-    const months = Math.floor(daysTotal / 30); // Approximate: 1 month ≈ 30 days
+    const months = Math.floor(daysTotal / 30);
     const days = daysTotal % 30;
 
     const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
@@ -119,25 +118,26 @@ export default function StakeItem({
   }
 
   return (
-    <div className="w-full p-4 border-green-700 border-2 rounded-2xl">
-      <Title className="w-full">{stake.voteTitle}</Title>
+    <div className="w-full p-4 bg-[#1e1e1e] border-emerald-600 border-2 rounded-2xl">
+      <Title className="w-full text-white">{stake.voteTitle}</Title>
       <Divider className="mt-1 mb-2" />
-      <Text>Option: {Number(stake.voteOption) + 1}</Text>
-      <Text className="mt-2">
+      <Text className="text-[#999999]">Option: {Number(stake.voteOption) + 1}</Text>
+      <Text className="mt-2 text-[#e0e0e0]">
         Staked {stake.stakes} for {stake.votes} votes
       </Text>
-      <Flex>
+      <Flex className="mt-4">
         {timeLeft.totalMilliseconds > 24 * 60 * 60 * 1000 ? (
-          <Text>
+          <Text className="text-[#999999]">
             {timeLeft.months} months {timeLeft.days} days left to withdraw
           </Text>
         ) : (
-          <Text>
+          <Text className="text-amber-400">
             {timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s left to
             withdraw
           </Text>
         )}
         <Button
+          color="emerald"
           disabled={
             timeLeft.months > 0 ||
             timeLeft.days > 0 ||

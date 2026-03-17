@@ -3,7 +3,9 @@ import { Vote } from '../lib/vote-schema';
 import clientPromise from '../lib/mongoclient';
 import { marked } from 'marked';
 import { sanitizeHtml } from '../lib/sanitize-html';
-const colors = ['green', 'blue', 'yellow', 'pink', 'purple'] as const;
+
+const colors = ['emerald', 'sky', 'amber', 'rose', 'violet'] as const;
+
 export default function LastVotePage({
   vote_data
 }: {
@@ -13,7 +15,6 @@ export default function LastVotePage({
     (acc, vote) => acc + vote.votes,
     0
   );
-  //check if two options have the same votes
   const hasWinner = vote_data?.super_majority
     ? vote_data?.votes.some((vote) => vote.votes > totalVotes! / 2)
     : !vote_data?.votes.some((vote1, index1) => {
@@ -24,31 +25,32 @@ export default function LastVotePage({
   const winnerVote = vote_data?.votes.reduce((prev, current) =>
     prev.votes > current.votes ? prev : current
   );
+
   return (
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
       {vote_data !== null ? (
         <Flex flexDirection="col" justifyContent="center" alignItems="center">
-          <Title>{vote_data.title}</Title>
+          <Title className="text-white">{vote_data.title}</Title>
           <div
-            className="markdown-content mb-3"
+            className="markdown-content mb-3 text-[#e0e0e0]"
             dangerouslySetInnerHTML={{
               __html: sanitizeHtml(vote_data.description)
             }}
           />
-          <span>
+          <span className="text-[#999999]">
             Started on {new Date(vote_data.createdAt).toLocaleString()} UTC
           </span>
-          <span>
+          <span className="text-[#999999]">
             Closed on {new Date(vote_data.end_date).toLocaleString()} UTC
           </span>
 
           <Divider />
           {vote_data.super_majority && (
-            <p className="text-lg font-bold text-red-700 dark:text-dark-tremor-content-strong">
+            <p className="text-lg font-bold text-rose-400">
               This vote required a super majority: no option passes!
             </p>
           )}
-          <Flex className="grid grid-cols-2 gap-4">
+          <Flex className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
             {vote_data.votes.map((vote, index) => {
               const percent = Math.round((vote.votes / totalVotes!) * 100);
               return (
@@ -56,13 +58,13 @@ export default function LastVotePage({
                   key={index}
                   className={
                     vote.title === winnerVote?.title && hasWinner
-                      ? 'mt-5 border-4'
-                      : 'mt-5'
+                      ? 'mt-5 border-4 border-emerald-500 bg-[#1e1e1e]'
+                      : 'mt-5 bg-[#1e1e1e] border border-[#333333]'
                   }
                   decorationColor={
                     vote.title === winnerVote?.title && hasWinner
-                      ? 'green'
-                      : 'gray'
+                      ? 'emerald'
+                      : 'slate'
                   }
                 >
                   <Flex
@@ -70,9 +72,9 @@ export default function LastVotePage({
                     justifyContent="center"
                     alignItems="center"
                   >
-                    <Title>{vote.title}</Title>
+                    <Title className="text-white">{vote.title}</Title>
                     <div
-                      className="markdown-content mb-3"
+                      className="markdown-content mb-3 text-[#e0e0e0]"
                       dangerouslySetInnerHTML={{
                         __html: sanitizeHtml(vote.description)
                       }}
@@ -82,6 +84,7 @@ export default function LastVotePage({
                       flexDirection="row"
                       justifyContent="between"
                       alignItems="center"
+                      className="w-full text-[#999999]"
                     >
                       <span>
                         {vote.votes} votes &bull; {percent ? percent : 0}%
@@ -92,7 +95,7 @@ export default function LastVotePage({
                       flexDirection="row"
                       justifyContent="between"
                       alignItems="center"
-                      className="w-full"
+                      className="w-full text-[#999999]"
                     >
                       <span>{vote.different_people} wallets</span>
                       {/*@ts-ignore*/}
@@ -113,7 +116,7 @@ export default function LastVotePage({
           </Flex>
         </Flex>
       ) : (
-        <p>No vote found</p>
+        <p className="text-[#999999]">No vote found</p>
       )}
     </main>
   );

@@ -19,7 +19,8 @@ import { EyeSlashIcon } from '@heroicons/react/24/outline';
 import { Price } from '../lib/price-schema';
 import axios from 'axios';
 
-const colors = ['green', 'blue', 'yellow', 'pink', 'purple'] as const;
+const colors = ['emerald', 'sky', 'amber', 'rose', 'violet'] as const;
+
 export default function VotePage({
   vote_data,
   price,
@@ -46,21 +47,24 @@ export default function VotePage({
           );
           return (
             <Flex
+              key={voteIdx}
               flexDirection="col"
               justifyContent="center"
               alignItems="center"
               className="mb-8"
             >
-              <Title>{vote.title}</Title>
+              <Title className="text-white">{vote.title}</Title>
               <div
-                className="markdown-content mb-3"
+                className="markdown-content mb-3 text-[#e0e0e0]"
                 dangerouslySetInnerHTML={{
                   __html: sanitizeHtml(vote.description)
                 }}
               />
-              Will be closed on {new Date(vote.end_date).toLocaleString()} UTC
+              <span className="text-[#999999]">
+                Will be closed on {new Date(vote.end_date).toLocaleString()} UTC
+              </span>
               {vote.super_majority && (
-                <p className="font-bold text-tremor-content-strong dark:text-dark-tremor-content-strong">
+                <p className="font-bold text-[#e0e0e0] mt-2">
                   This vote requires a super majority: in order to pass, one
                   option should receive more than half the votes
                 </p>
@@ -75,11 +79,12 @@ export default function VotePage({
                 <Icon
                   icon={EyeSlashIcon}
                   size="xl"
+                  color="slate"
                   tooltip="Votes are currently hidden and will be revealed at the end of the FIP"
                 ></Icon>
-                <Title>Hidden votes</Title>
+                <Title className="text-[#999999]">Hidden votes</Title>
               </Flex>
-              <Flex className="grid grid-cols-2 gap-4">
+              <Flex className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                 {activeAccount ? (
                   vote.votes.map((option, index) => {
                     const voteKey = `${voteIdx}-${index}`;
@@ -87,15 +92,15 @@ export default function VotePage({
                       (option.votes / totalVotes!) * 100
                     );
                     return (
-                      <Card key={index} className="mt-5">
+                      <Card key={index} className="mt-5 bg-[#1e1e1e] border border-[#333333]">
                         <Flex
                           flexDirection="col"
                           justifyContent="center"
                           alignItems="center"
                         >
-                          <Title>{option.title}</Title>
+                          <Title className="text-white">{option.title}</Title>
                           <div
-                            className="markdown-content mb-3"
+                            className="markdown-content mb-3 text-[#e0e0e0]"
                             dangerouslySetInnerHTML={{
                               __html: sanitizeHtml(option.description)
                             }}
@@ -106,6 +111,7 @@ export default function VotePage({
                               flexDirection="row"
                               justifyContent="between"
                               alignItems="center"
+                              className="w-full text-[#999999]"
                             >
                               <span>
                                 {option.votes} votes &bull;{' '}
@@ -146,7 +152,7 @@ export default function VotePage({
                     );
                   })
                 ) : (
-                  <p style={{ marginTop: '15px' }}>
+                  <p className="text-[#999999] mt-4 col-span-2 text-center">
                     You need to connect your wallet to vote!
                   </p>
                 )}
@@ -155,7 +161,7 @@ export default function VotePage({
           );
         })
       ) : (
-        <p>No active vote found</p>
+        <p className="text-[#999999]">No active vote found</p>
       )}
     </main>
   );
@@ -225,7 +231,6 @@ export async function getServerSideProps(context: any) {
         const rawHTML = marked.parse(markdown) as string;
         return rawHTML;
       };
-      //
 
       const vote_data = await Promise.all(
         votes.map(async (vote) => {

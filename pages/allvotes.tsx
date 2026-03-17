@@ -8,7 +8,7 @@ import { all } from 'axios';
 import { marked } from 'marked';
 import { sanitizeHtml } from '../lib/sanitize-html';
 
-const colors = ['green', 'blue', 'yellow', 'pink', 'purple'] as const;
+const colors = ['emerald', 'sky', 'amber', 'rose', 'violet'] as const;
 
 export default function AllVotesPage({
   votes_data
@@ -50,11 +50,11 @@ export default function AllVotesPage({
           return (
             <section
               key={voteIndex}
-              className="border border-gray-300 p-4 rounded-lg w-full"
+              className="border border-[#333333] p-4 rounded-lg w-full bg-[#1e1e1e]"
             >
               <Button
                 onClick={() => toggleVoteDetails(voteIndex)}
-                className="w-full bg-blue-500 text-white hover:bg-blue-600"
+                className="w-full bg-[#2a2a2a] text-white hover:bg-[#333333] border border-[#444444]"
               >
                 <Flex
                   flexDirection="col"
@@ -71,7 +71,7 @@ export default function AllVotesPage({
                     alignItems="center"
                     className="w-full"
                   >
-                    <RiCheckboxCircleFill className="ml-2" color="#45E881" />
+                    <RiCheckboxCircleFill className="ml-2" color="#4ade80" />
                     <Title className="text-white break-words whitespace-normal">
                       {' '}
                       Winner: {winnerVote?.title}
@@ -86,27 +86,27 @@ export default function AllVotesPage({
                   flexDirection="col"
                   justifyContent="center"
                   alignItems="center"
-                  className="w-full"
+                  className="w-full mt-4"
                 >
                   <div
-                    className="markdown-content mb-3"
+                    className="markdown-content mb-3 text-[#e0e0e0]"
                     dangerouslySetInnerHTML={{
                       __html: sanitizeHtml(vote_data.description)
                     }}
                   />
 
-                  <span>
+                  <span className="text-[#999999]">
                     Started on {new Date(vote_data.createdAt).toLocaleString()}{' '}
                     UTC
                   </span>
-                  <span>
+                  <span className="text-[#999999]">
                     Closed on {new Date(vote_data.end_date).toLocaleString()}{' '}
                     UTC
                   </span>
 
                   <Divider />
                   {vote_data.super_majority && (
-                    <p className="text-lg font-bold text-red-700 dark:text-dark-tremor-content-strong">
+                    <p className="text-lg font-bold text-rose-400">
                       This vote required a super majority: no option passes!
                     </p>
                   )}
@@ -118,11 +118,11 @@ export default function AllVotesPage({
                       return (
                         <Card
                           key={index}
-                          className={`mt-5 w-full border ${vote.title === winnerVote?.title && hasWinner ? 'border-4 border-green-500' : 'border-gray-300'}`}
+                          className={`mt-5 w-full border bg-[#1a1a1a] ${vote.title === winnerVote?.title && hasWinner ? 'border-4 border-emerald-500' : 'border-[#333333]'}`}
                           decorationColor={
                             vote.title === winnerVote?.title && hasWinner
-                              ? 'green'
-                              : 'gray'
+                              ? 'emerald'
+                              : 'slate'
                           }
                         >
                           <Flex
@@ -131,11 +131,11 @@ export default function AllVotesPage({
                             alignItems="center"
                             className="w-full"
                           >
-                            <Title className="w-full text-center">
+                            <Title className="w-full text-center text-white">
                               {vote.title}
                             </Title>
                             <div
-                              className="markdown-content mb-3"
+                              className="markdown-content mb-3 text-[#e0e0e0]"
                               dangerouslySetInnerHTML={{
                                 __html: sanitizeHtml(vote.description)
                               }}
@@ -145,7 +145,7 @@ export default function AllVotesPage({
                               flexDirection="row"
                               justifyContent="between"
                               alignItems="center"
-                              className="w-full"
+                              className="w-full text-[#999999]"
                             >
                               <span>
                                 {vote.votes} votes &bull;{' '}
@@ -157,7 +157,7 @@ export default function AllVotesPage({
                               flexDirection="row"
                               justifyContent="between"
                               alignItems="center"
-                              className="w-full"
+                              className="w-full text-[#999999]"
                             >
                               <span>{vote.different_people} wallets</span>
                               {/*@ts-ignore*/}
@@ -182,7 +182,7 @@ export default function AllVotesPage({
           );
         })
       ) : (
-        <p>No votes found</p>
+        <p className="text-[#999999]">No votes found</p>
       )}
     </main>
   );
@@ -226,7 +226,7 @@ export async function getServerSideProps(context: any) {
           vote.votes.map(async (vote_option) => ({
             title: vote_option.title,
             description: await renderMarkdown(vote_option.description),
-            votes: vote_option.votes, // Assuming this is a number
+            votes: vote_option.votes,
             different_people: vote_option.different_people.length
           }))
         );

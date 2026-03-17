@@ -1,6 +1,7 @@
 import type { Config } from 'tailwindcss';
 
 export default {
+  darkMode: 'class',
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
@@ -12,44 +13,43 @@ export default {
     current: 'currentColor',
     extend: {
       colors: {
-        // light mode
+        // fry.farm dark theme
         tremor: {
           brand: {
-            faint: '#eff6ff', // blue-50
-            muted: '#bfdbfe', // blue-200
-            subtle: '#60a5fa', // blue-400
-            DEFAULT: '#3b82f6', // blue-500
-            emphasis: '#1d4ed8', // blue-700
-            inverted: '#ffffff' // white
+            faint: '#1a1a1a', // dark subtle bg
+            muted: '#333333', // dark muted
+            subtle: '#999999', // muted text
+            DEFAULT: '#e0e0e0', // neutral accent
+            emphasis: '#ffffff', // white emphasis
+            inverted: '#0f0f0f' // dark background
           },
           background: {
-            muted: '#f9fafb', // gray-50
-            subtle: '#f3f4f6', // gray-100
-            DEFAULT: '#ffffff', // white
-            emphasis: '#374151' // gray-700
+            muted: '#1a1a1a', // secondary dark bg
+            subtle: '#1e1e1e', // card bg
+            DEFAULT: '#0f0f0f', // primary dark bg
+            emphasis: '#333333' // emphasis dark
           },
           border: {
-            DEFAULT: '#e5e7eb' // gray-200
+            DEFAULT: '#333333' // dark border
           },
           ring: {
-            DEFAULT: '#e5e7eb' // gray-200
+            DEFAULT: '#333333' // dark ring
           },
           content: {
-            subtle: '#9ca3af', // gray-400
-            DEFAULT: '#6b7280', // gray-500
-            emphasis: '#374151', // gray-700
-            strong: '#111827', // gray-900
-            inverted: '#ffffff' // white
+            subtle: '#777777', // very muted text
+            DEFAULT: '#999999', // secondary text
+            emphasis: '#cccccc', // brighter text
+            strong: '#e0e0e0', // primary text
+            inverted: '#0f0f0f' // dark text on light
           }
-        }
+        },
+        // Custom card background
+        card: '#1e1e1e'
       },
       boxShadow: {
-        // light
-        'tremor-input': '0 1px 2px 0 rgb(0 0 0 / 0.05)',
-        'tremor-card':
-          '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
-        'tremor-dropdown':
-          '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
+        'tremor-input': '0 1px 2px 0 rgb(0 0 0 / 0.3)',
+        'tremor-card': '0 4px 24px rgba(0, 0, 0, 0.4)',
+        'tremor-dropdown': '0 4px 12px rgba(0, 0, 0, 0.5)'
       },
       borderRadius: {
         'tremor-small': '0.375rem',
@@ -63,7 +63,7 @@ export default {
         'tremor-metric': ['1.875rem', { lineHeight: '2.25rem' }]
       },
       spacing: {
-        '15': '3.75rem', // Add custom value for m-15, p-15, etc.
+        '15': '3.75rem',
       }
     }
   },
