@@ -4,6 +4,7 @@ import { Fragment } from 'react';
 import { usePathname } from 'next/navigation';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import ThemeToggle, { useTheme } from '../components/theme-toggle';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -19,9 +20,10 @@ function classNames(...classes: string[]) {
 
 export default function Navbar() {
   const pathname = usePathname();
+  const isDark = useTheme();
 
   return (
-    <Disclosure as="nav" className="bg-[#1a1a1a] border-b border-[#333333]">
+    <Disclosure as="nav" className="bg-[var(--bg-secondary)] border-b border-[var(--border-color)]">
       {({ open }) => (
         <>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -34,8 +36,12 @@ export default function Navbar() {
                   className="flex items-center"
                 >
                   <div className="flex flex-shrink-0 items-center gap-2">
-                    <span className="text-xl font-bold text-white">FRY</span>
-                    <span className="text-xl text-[#999999]">Vote</span>
+                    <img
+                      src={isDark ? "/fry-logo-light.png" : "/fry-logo-dark.png"}
+                      alt="Fry Networks"
+                      className="h-8 w-auto"
+                    />
+                    <span className="text-[var(--text-secondary)] text-sm font-medium">Vote</span>
                   </div>
                 </button>
                 <div className="hidden sm:-my-px sm:ml-8 sm:flex sm:space-x-6">
@@ -45,8 +51,8 @@ export default function Navbar() {
                       href={item.href}
                       className={classNames(
                         pathname === item.href
-                          ? 'border-[#60a5fa] text-white'
-                          : 'border-transparent text-[#999999] hover:text-[#e0e0e0] hover:border-[#555555]',
+                          ? 'border-[#e74c3c] text-[var(--text-heading)]'
+                          : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--border-color)]',
                         'inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-150'
                       )}
                       aria-current={pathname === item.href ? 'page' : undefined}
@@ -56,7 +62,8 @@ export default function Navbar() {
                   ))}
                 </div>
               </div>
-              <div className="hidden sm:ml-6 sm:flex sm:items-center">
+              <div className="hidden sm:ml-6 sm:flex sm:items-center gap-3">
+                <ThemeToggle />
                 <Menu as="div" className="relative ml-3">
                   <Transition
                     as={Fragment}
@@ -69,8 +76,9 @@ export default function Navbar() {
                   ></Transition>
                 </Menu>
               </div>
-              <div className="-mr-2 flex items-center sm:hidden">
-                <Disclosure.Button className="inline-flex items-center justify-center rounded-lg bg-[#1a1a1a] p-2 text-[#999999] hover:bg-[#2a2a2a] hover:text-[#e0e0e0] focus:outline-none focus:ring-2 focus:ring-[#60a5fa] focus:ring-offset-2 focus:ring-offset-[#0f0f0f]">
+              <div className="-mr-2 flex items-center sm:hidden gap-2">
+                <ThemeToggle />
+                <Disclosure.Button className="inline-flex items-center justify-center rounded-lg bg-[var(--bg-secondary)] p-2 text-[var(--text-secondary)] hover:bg-[var(--border-color)] hover:text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[#e74c3c] focus:ring-offset-2 focus:ring-offset-[var(--bg-primary)]">
                   <span className="sr-only">Open main menu</span>
                   {open ? (
                     <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
@@ -82,7 +90,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          <Disclosure.Panel className="sm:hidden bg-[#1a1a1a]">
+          <Disclosure.Panel className="sm:hidden bg-[var(--bg-secondary)]">
             <div className="space-y-1 pt-2 pb-3">
               {navigation.map((item) => (
                 <Disclosure.Button
@@ -91,8 +99,8 @@ export default function Navbar() {
                   href={item.href}
                   className={classNames(
                     pathname === item.href
-                      ? 'bg-[#2a2a2a] border-[#60a5fa] text-white'
-                      : 'border-transparent text-[#999999] hover:bg-[#252525] hover:border-[#555555] hover:text-[#e0e0e0]',
+                      ? 'bg-[var(--bg-card)] border-[#e74c3c] text-[var(--text-heading)]'
+                      : 'border-transparent text-[var(--text-secondary)] hover:bg-[var(--bg-card)] hover:border-[var(--border-color)] hover:text-[var(--text-primary)]',
                     'block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors duration-150'
                   )}
                   aria-current={pathname === item.href ? 'page' : undefined}

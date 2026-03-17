@@ -53,7 +53,7 @@ export default function StakePage() {
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
       {updateSuccess.message != '' && updateSuccess.success != false && (
         <Callout
-          className="mt-4 mb-4 bg-[#1e1e1e] border-emerald-500"
+          className="mt-4 mb-4 bg-[var(--bg-card)] border-emerald-500"
           title="Success"
           icon={CheckCircleIcon}
           color="emerald"
@@ -63,7 +63,7 @@ export default function StakePage() {
       )}
       {updateSuccess.message != '' && updateSuccess.success == false && (
         <Callout
-          className="mt-4 mb-4 bg-[#1e1e1e] border-rose-500"
+          className="mt-4 mb-4 bg-[var(--bg-card)] border-rose-500"
           title="Error"
           icon={CheckCircleIcon}
           color="rose"
@@ -79,7 +79,7 @@ export default function StakePage() {
             })}
         </Flex>
       ) : (
-        <p className="text-[#999999] mt-4">
+        <p className="text-[var(--text-secondary)] mt-4">
           You need to connect your wallet to check staking information!
         </p>
       )}

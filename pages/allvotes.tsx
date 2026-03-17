@@ -8,7 +8,7 @@ import { all } from 'axios';
 import { marked } from 'marked';
 import { sanitizeHtml } from '../lib/sanitize-html';
 
-const colors = ['emerald', 'sky', 'amber', 'rose', 'violet'] as const;
+const colors = ['emerald', 'rose', 'amber', 'violet', 'sky'] as const;
 
 export default function AllVotesPage({
   votes_data
@@ -50,11 +50,11 @@ export default function AllVotesPage({
           return (
             <section
               key={voteIndex}
-              className="border border-[#333333] p-4 rounded-lg w-full bg-[#1e1e1e]"
+              className="border border-[var(--border-color)] p-4 rounded-lg w-full bg-[var(--bg-card)]"
             >
               <Button
                 onClick={() => toggleVoteDetails(voteIndex)}
-                className="w-full bg-[#2a2a2a] text-white hover:bg-[#333333] border border-[#444444]"
+                className="w-full bg-[var(--bg-secondary)] text-[var(--text-heading)] hover:bg-[var(--border-color)] border border-[var(--border-color)]"
               >
                 <Flex
                   flexDirection="col"
@@ -62,7 +62,7 @@ export default function AllVotesPage({
                   alignItems="center"
                   className="w-full"
                 >
-                  <Title className="text-white w-full text-center break-words whitespace-normal">
+                  <Title className="text-[var(--text-heading)] w-full text-center break-words whitespace-normal">
                     {vote_data.title}
                   </Title>
                   <Flex
@@ -72,7 +72,7 @@ export default function AllVotesPage({
                     className="w-full"
                   >
                     <RiCheckboxCircleFill className="ml-2" color="#4ade80" />
-                    <Title className="text-white break-words whitespace-normal">
+                    <Title className="text-[var(--text-heading)] break-words whitespace-normal">
                       {' '}
                       Winner: {winnerVote?.title}
                     </Title>
@@ -89,17 +89,17 @@ export default function AllVotesPage({
                   className="w-full mt-4"
                 >
                   <div
-                    className="markdown-content mb-3 text-[#e0e0e0]"
+                    className="markdown-content mb-3 text-[var(--text-primary)]"
                     dangerouslySetInnerHTML={{
                       __html: sanitizeHtml(vote_data.description)
                     }}
                   />
 
-                  <span className="text-[#999999]">
+                  <span className="text-[var(--text-secondary)]">
                     Started on {new Date(vote_data.createdAt).toLocaleString()}{' '}
                     UTC
                   </span>
-                  <span className="text-[#999999]">
+                  <span className="text-[var(--text-secondary)]">
                     Closed on {new Date(vote_data.end_date).toLocaleString()}{' '}
                     UTC
                   </span>
@@ -118,7 +118,7 @@ export default function AllVotesPage({
                       return (
                         <Card
                           key={index}
-                          className={`mt-5 w-full border bg-[#1a1a1a] ${vote.title === winnerVote?.title && hasWinner ? 'border-4 border-emerald-500' : 'border-[#333333]'}`}
+                          className={`mt-5 w-full border bg-[var(--bg-secondary)] ${vote.title === winnerVote?.title && hasWinner ? 'border-4 border-emerald-500' : 'border-[var(--border-color)]'}`}
                           decorationColor={
                             vote.title === winnerVote?.title && hasWinner
                               ? 'emerald'
@@ -131,11 +131,11 @@ export default function AllVotesPage({
                             alignItems="center"
                             className="w-full"
                           >
-                            <Title className="w-full text-center text-white">
+                            <Title className="w-full text-center text-[var(--text-heading)]">
                               {vote.title}
                             </Title>
                             <div
-                              className="markdown-content mb-3 text-[#e0e0e0]"
+                              className="markdown-content mb-3 text-[var(--text-primary)]"
                               dangerouslySetInnerHTML={{
                                 __html: sanitizeHtml(vote.description)
                               }}
@@ -145,7 +145,7 @@ export default function AllVotesPage({
                               flexDirection="row"
                               justifyContent="between"
                               alignItems="center"
-                              className="w-full text-[#999999]"
+                              className="w-full text-[var(--text-secondary)]"
                             >
                               <span>
                                 {vote.votes} votes &bull;{' '}
@@ -157,7 +157,7 @@ export default function AllVotesPage({
                               flexDirection="row"
                               justifyContent="between"
                               alignItems="center"
-                              className="w-full text-[#999999]"
+                              className="w-full text-[var(--text-secondary)]"
                             >
                               <span>{vote.different_people} wallets</span>
                               {/*@ts-ignore*/}
@@ -182,7 +182,7 @@ export default function AllVotesPage({
           );
         })
       ) : (
-        <p className="text-[#999999]">No votes found</p>
+        <p className="text-[var(--text-secondary)]">No votes found</p>
       )}
     </main>
   );

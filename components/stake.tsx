@@ -118,16 +118,16 @@ export default function StakeItem({
   }
 
   return (
-    <div className="w-full p-4 bg-[#1e1e1e] border-emerald-600 border-2 rounded-2xl">
-      <Title className="w-full text-white">{stake.voteTitle}</Title>
+    <div className="w-full p-4 bg-[var(--bg-card)] border-emerald-600 border-2 rounded-2xl">
+      <Title className="w-full text-[var(--text-heading)]">{stake.voteTitle}</Title>
       <Divider className="mt-1 mb-2" />
-      <Text className="text-[#999999]">Option: {Number(stake.voteOption) + 1}</Text>
-      <Text className="mt-2 text-[#e0e0e0]">
+      <Text className="text-[var(--text-secondary)]">Option: {Number(stake.voteOption) + 1}</Text>
+      <Text className="mt-2 text-[var(--text-primary)]">
         Staked {stake.stakes} for {stake.votes} votes
       </Text>
       <Flex className="mt-4">
         {timeLeft.totalMilliseconds > 24 * 60 * 60 * 1000 ? (
-          <Text className="text-[#999999]">
+          <Text className="text-[var(--text-secondary)]">
             {timeLeft.months} months {timeLeft.days} days left to withdraw
           </Text>
         ) : (

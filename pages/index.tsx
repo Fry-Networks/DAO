@@ -6,7 +6,7 @@ import ConnectMenu from '../components/connect';
 export default function IndexPage() {
   return (
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
-      <Title className="mb-20 text-white">Official DAO Platform of the FRY Foundation</Title>
+      <Title className="mb-20 text-[var(--text-heading)]">Official DAO Platform of Fry Networks</Title>
       <ConnectMenu />
     </main>
   );
