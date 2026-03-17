@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import ThemeToggle, { useTheme } from '../components/theme-toggle';
+import { logoLight, logoDark } from '../components/logos';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -35,14 +36,11 @@ export default function Navbar() {
                   }}
                   className="flex items-center"
                 >
-                  <div className="flex flex-shrink-0 items-center gap-2">
-                    <img
-                      src={isDark ? "/fry-logo-light.png" : "/fry-logo-dark.png"}
-                      alt="Fry Networks"
-                      className="h-8 w-auto"
-                    />
-                    <span className="text-[var(--text-secondary)] text-sm font-medium">Vote</span>
-                  </div>
+                  <img
+                    src={isDark ? logoLight : logoDark}
+                    alt="Fry Networks"
+                    className="h-8 w-auto"
+                  />
                 </button>
                 <div className="hidden sm:-my-px sm:ml-8 sm:flex sm:space-x-6">
                   {navigation.map((item) => (
