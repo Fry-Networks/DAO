@@ -1,6 +1,7 @@
 import { NextPage } from 'next';
 import { AppProps } from 'next/app';
 import '../app/globals.css';
+import { SessionProvider } from 'next-auth/react';
 import { WalletProvider, useInitializeProviders, PROVIDER_ID } from '../lib/use-wallet-compat';
 import Navbar from '../app/navbar';
 import Footer from '../components/footer';
@@ -18,14 +19,16 @@ export default function MyApp({ Component, pageProps }: MyAppProps) {
   });
 
   return (
-    <WalletProvider value={providers}>
-      <div className="flex flex-col min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
-        <Navbar />
-        <main id="main" className="flex-1 w-full">
-          <Component {...pageProps} />
-        </main>
-        <Footer />
-      </div>
-    </WalletProvider>
+    <SessionProvider session={pageProps.session}>
+      <WalletProvider value={providers}>
+        <div className="flex flex-col min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]">
+          <Navbar />
+          <main id="main" className="flex-1 w-full">
+            <Component {...pageProps} />
+          </main>
+          <Footer />
+        </div>
+      </WalletProvider>
+    </SessionProvider>
   );
 }

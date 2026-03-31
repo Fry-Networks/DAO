@@ -16,6 +16,11 @@ services:
       MONGO_CA_CERT_PATH: "/etc/ssl/mongo/mongo-ca.crt"
       MONGO_URI: "op://DAO/DAO/MONGO_URI"
       VOTE_WALLET_SECRET: "op://DAO/DAO/VOTE_WALLET_SECRET"
+      NEXTAUTH_URL: "https://vote.frynetworks.com"
+      NEXTAUTH_URL_INTERNAL: "http://127.0.0.1:3012"
+      NEXTAUTH_SECRET: "op://DAO/Discord OAuth Governance/NEXTAUTH_SECRET"
+      DISCORD_CLIENT_ID: "op://DAO/Discord OAuth Governance/Client ID"
+      DISCORD_CLIENT_SECRET: "op://DAO/Discord OAuth Governance/Client Secret"
     command: ["npm", "start"]
     healthcheck:
       test:

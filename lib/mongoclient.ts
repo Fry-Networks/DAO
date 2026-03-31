@@ -35,3 +35,9 @@ export default function clientPromiseFactory() {
 
   return clientPromise;
 }
+
+// Export a getter function for NextAuth MongoDB adapter
+// This preserves lazy initialization - connection only made when actually called
+export function getMongoClientPromise(): Promise<MongoClient> {
+  return clientPromiseFactory();
+}
