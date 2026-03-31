@@ -184,5 +184,10 @@ export async function getServerSideProps(context: any) {
     };
   } catch (e) {
     console.error(e);
+    return {
+      props: {
+        vote_data: null
+      }
+    };
   }
 }
