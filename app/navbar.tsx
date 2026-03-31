@@ -10,6 +10,7 @@ import { logoLight, logoDark } from '../components/logos';
 
 const navigation = [
   { name: 'Home', href: '/' },
+  { name: 'cFIP', href: '/cfip' },
   { name: 'Vote', href: '/vote' },
   { name: 'Last Vote', href: '/lastvote' },
   { name: 'All Votes', href: '/allvotes' },
