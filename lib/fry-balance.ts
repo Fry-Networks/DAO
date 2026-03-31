@@ -62,8 +62,15 @@ export async function checkFryBalance(address: string): Promise<FryBalanceResult
   
   const algod = await getAlgodClient();
   const accountInfo = await algod.accountInformation(address).do();
-  const fryAsset = accountInfo.assets?.find((a: any) => a['asset-id'] === FRY_ASA_ID);
-  // Convert bigint to number (algosdk v3 returns bigint for amounts)
+  
+  // algosdk v3 uses camelCase field names (assetId) and returns bigint/string
+  // Support both formats for safety
+  const fryAsset = accountInfo.assets?.find((a: any) => {
+    const id = a.assetId ?? a['asset-id'];
+    return Number(id) === FRY_ASA_ID || BigInt(id) === BigInt(FRY_ASA_ID);
+  });
+  
+  // Convert bigint/string amount to number
   const balance = Number(fryAsset?.amount ?? 0);
   
   return {
