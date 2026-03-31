@@ -130,13 +130,13 @@ export default function CfipDetailPage({ cfip }: { cfip: CfipData | null }) {
             )}
             {cfip.author.name}
           </span>
-          <span>{new Date(cfip.createdAt).toLocaleString()}</span>
+          <span suppressHydrationWarning>{new Date(cfip.createdAt).toLocaleString()}</span>
         </Flex>
 
         <Divider />
 
         <div 
-          className="markdown-content text-[var(--text-primary)] mt-4"
+          className="markdown-content text-[var(--text-primary)] mt-4 break-words" style={{ overflowWrap: 'anywhere' }}
           dangerouslySetInnerHTML={{ __html: cfip.descriptionHtml }}
         />
       </Card>
@@ -226,7 +226,7 @@ export default function CfipDetailPage({ cfip }: { cfip: CfipData | null }) {
                     <img src={comment.image} alt="" className="w-6 h-6 rounded-full" />
                   )}
                   <Text className="text-[var(--text-primary)] font-medium">{comment.name}</Text>
-                  <Text className="text-[var(--text-secondary)] text-xs">
+                  <Text className="text-[var(--text-secondary)] text-xs" suppressHydrationWarning>
                     {new Date(comment.createdAt).toLocaleString()}
                   </Text>
                 </Flex>
