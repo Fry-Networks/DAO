@@ -13,6 +13,7 @@ services:
       NODE_OPTIONS: "--disable-warning=DEP0060"
       PORT: "3012"
       NEXT_PUBLIC_TEST: "${NEXT_PUBLIC_TEST:-false}"
+      NEXT_PUBLIC_GOVERNANCE_APP_ID: "3500693631"
       MONGO_CA_CERT_PATH: "/etc/ssl/mongo/mongo-ca.crt"
       MONGO_URI: "op://DAO/DAO/MONGO_URI"
       VOTE_WALLET_SECRET: "op://DAO/DAO/VOTE_WALLET_SECRET"

@@ -8,6 +8,9 @@ import { ObjectId } from 'mongodb';
 import { marked } from 'marked';
 import { sanitizeHtml } from '../../lib/sanitize-html';
 import { RiEditLine, RiSendPlane2Line } from '@remixicon/react';
+import { useWallet } from '../../lib/use-wallet-compat';
+import TempCheckButton from '../../components/temp-check-button';
+import TempCheckVote from '../../components/temp-check-vote';
 
 interface Comment {
   id: string;
@@ -50,10 +53,12 @@ const statusColors: Record<string, 'gray' | 'blue' | 'amber' | 'emerald'> = {
 
 export default function CfipDetailPage({ cfip }: { cfip: CfipData | null }) {
   const { data: session } = useSession();
+  const { activeAddress } = useWallet();
   const router = useRouter();
   const [commentText, setCommentText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);
 
   if (!cfip) {
     return (
@@ -74,6 +79,7 @@ export default function CfipDetailPage({ cfip }: { cfip: CfipData | null }) {
   const isAuthor = session?.user && (session.user as any).discordId === cfip.author.discordId;
   const canEdit = isAuthor && (cfip.status === 'discussion' || cfip.status === 'draft');
   const canComment = cfip.status === 'discussion' || cfip.status === 'draft';
+  const canRequestTempCheck = isAuthor && cfip.status === 'discussion' && activeAddress;
 
   const submitComment = async () => {
     if (!session || !commentText.trim()) return;
@@ -100,6 +106,11 @@ export default function CfipDetailPage({ cfip }: { cfip: CfipData | null }) {
     }
 
     setSubmitting(false);
+  };
+
+  const handleTempCheckSuccess = () => {
+    setRefreshKey(k => k + 1);
+    router.replace(router.asPath);
   };
 
   return (
@@ -141,9 +152,25 @@ export default function CfipDetailPage({ cfip }: { cfip: CfipData | null }) {
         />
       </Card>
 
+      {/* Temperature Check */}
+      <TempCheckVote 
+        key={refreshKey} 
+        cfipId={cfip.id} 
+        onVoteSuccess={handleTempCheckSuccess} 
+      />
+
       {/* Voting Options */}
       <Card className="bg-[var(--bg-card)] border border-[var(--border-color)] mb-6">
-        <Title className="text-[var(--text-heading)] text-lg mb-4">Voting Options</Title>
+        <Flex justifyContent="between" alignItems="center" className="mb-4">
+          <Title className="text-[var(--text-heading)] text-lg">Voting Options</Title>
+          {canRequestTempCheck && (
+            <TempCheckButton 
+              cfipId={cfip.id} 
+              cfipTitle={cfip.title}
+              onSuccess={handleTempCheckSuccess}
+            />
+          )}
+        </Flex>
         <div className="space-y-3">
           {cfip.votes.map((option, index) => (
             <Card key={index} className="bg-[var(--bg-secondary)] p-4">
