@@ -73,6 +73,45 @@ function encodeUint64(value: number): Uint8Array {
 }
 
 /**
+ * Fetch fresh suggested params using native fetch with cache bypass.
+ * algosdk's internal HTTP client does not set cache:'no-store', causing
+ * the browser to serve stale params from disk cache. This function
+ * bypasses the HTTP cache entirely on every call.
+ */
+export async function fetchFreshSuggestedParams(
+  baseUrl: string
+): Promise<algosdk.SuggestedParams> {
+  const url = `${baseUrl}/api/algod/v2/transactions/params`;
+  const response = await fetch(url, {
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache',
+      'Pragma': 'no-cache',
+    },
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch suggested params: ${response.status}`);
+  }
+  const data = await response.json();
+  // Map REST API field names to algosdk SuggestedParams
+  // REST API returns: fee, min-fee, last-round, genesis-id, genesis-hash (base64)
+  const lastRound = data['last-round'];
+  // Decode base64 genesis hash to Uint8Array
+  const genesisHashBase64 = data['genesis-hash'];
+  const genesisHashBytes = Uint8Array.from(atob(genesisHashBase64), c => c.charCodeAt(0));
+  
+  return {
+    fee: data['fee'] ?? 0,
+    minFee: data['min-fee'] ?? 1000,
+    firstValid: lastRound,
+    lastValid: lastRound + 1000,
+    genesisID: data['genesis-id'],
+    genesisHash: genesisHashBytes,
+    flatFee: false,
+  };
+}
+
+/**
  * Build request_temp_check transaction group.
  * Atomic group: [Payment, AppCall]
  */
@@ -83,7 +122,11 @@ export async function buildRequestTempCheck(
   endDate: number
 ): Promise<algosdk.Transaction[]> {
   const appAddress = algosdk.getApplicationAddress(GOVERNANCE_APP_ID);
-  const suggestedParams = await algod.getTransactionParams().do();
+  // Use native fetch with cache bypass to avoid stale browser cache
+  const baseUrl = typeof window !== 'undefined'
+    ? window.location.origin
+    : 'http://localhost:3012';
+  const suggestedParams = await fetchFreshSuggestedParams(baseUrl);
   
   // Payment for vote box MBR
   const payTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
@@ -123,7 +166,11 @@ export async function buildCastTempVote(
   optionIndex: number
 ): Promise<algosdk.Transaction[]> {
   const appAddress = algosdk.getApplicationAddress(GOVERNANCE_APP_ID);
-  const suggestedParams = await algod.getTransactionParams().do();
+  // Use native fetch with cache bypass to avoid stale browser cache
+  const baseUrl = typeof window !== 'undefined'
+    ? window.location.origin
+    : 'http://localhost:3012';
+  const suggestedParams = await fetchFreshSuggestedParams(baseUrl);
   
   // Compute stake box key: "s" + sha256(vote_id + sender)
   const stakeBoxKey = await computeStakeBoxKey(voteId, sender);
