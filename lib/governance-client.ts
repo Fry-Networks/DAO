@@ -112,6 +112,63 @@ export async function fetchFreshSuggestedParams(
 }
 
 /**
+ * Wait for transaction confirmation using JSON endpoint (not msgpack).
+ *
+ * algosdk.waitForConfirmation() appends ?format=msgpack to the pending TX
+ * endpoint. The proxy receives binary msgpack from algod, JSON-serializes a
+ * raw Buffer, and returns {} — so algosdk never sees confirmed-round and
+ * times out after 4 rounds.
+ *
+ * This implementation calls the same endpoint WITHOUT ?format=msgpack,
+ * receiving JSON that the proxy handles correctly.
+ */
+export async function waitForConfirmationJson(
+  txId: string,
+  baseUrl: string,
+  maxRounds: number = 8
+): Promise<void> {
+  // Get current round to start polling from
+  const statusRes = await fetch(`${baseUrl}/api/algod/v2/status`, {
+    cache: 'no-store',
+  });
+  if (!statusRes.ok) {
+    throw new Error(`Failed to fetch algod status: ${statusRes.status}`);
+  }
+  const statusData = await statusRes.json();
+  let currentRound: number = statusData['last-round'];
+
+  for (let attempt = 0; attempt < maxRounds; attempt++) {
+    // Check pending — NO ?format=msgpack so proxy gets JSON from algod
+    const pendingRes = await fetch(
+      `${baseUrl}/api/algod/v2/transactions/pending/${txId}`,
+      { cache: 'no-store' }
+    );
+    if (pendingRes.ok) {
+      const pendingData = await pendingRes.json();
+      if (pendingData['confirmed-round'] && pendingData['confirmed-round'] > 0) {
+        return; // confirmed
+      }
+      if (pendingData['pool-error'] && pendingData['pool-error'] !== '') {
+        throw new Error(
+          `Transaction rejected by pool: ${pendingData['pool-error']}`
+        );
+      }
+    }
+
+    // Wait for next block before checking again
+    await fetch(
+      `${baseUrl}/api/algod/v2/status/wait-for-block-after/${currentRound}`,
+      { cache: 'no-store' }
+    );
+    currentRound += 1;
+  }
+
+  throw new Error(
+    `Transaction ${txId} not confirmed after ${maxRounds} rounds`
+  );
+}
+
+/**
  * Build request_temp_check transaction group.
  * Atomic group: [Payment, AppCall]
  */
@@ -256,6 +313,174 @@ export async function hasUserVoted(
       return false; // Box doesn't exist, user hasn't voted
     }
     throw error;
+  }
+}
+
+
+/**
+ * Build cast_vote transaction group for official FIP/cFIP voting.
+ * Atomic group: [Payment(MBR), AssetTransfer(FRY), AppCall(cast_vote)]
+ */
+export async function buildCastVote(
+  sender: string,
+  voteId: Uint8Array,
+  optionIndex: number,
+  fryAmount: bigint
+): Promise<algosdk.Transaction[]> {
+  const appAddress = algosdk.getApplicationAddress(GOVERNANCE_APP_ID);
+  const baseUrl = typeof window !== 'undefined'
+    ? window.location.origin
+    : 'http://127.0.0.1:3012';
+  const suggestedParams = await fetchFreshSuggestedParams(baseUrl);
+
+  const stakeBoxKey = await computeStakeBoxKey(voteId, sender);
+  const voteBoxName = concatBytes(VOTE_BOX_PREFIX, voteId);
+
+  // txn[0]: Payment for stake box MBR
+  const payTxn = algosdk.makePaymentTxnWithSuggestedParamsFromObject({
+    sender,
+    receiver: appAddress,
+    amount: STAKE_BOX_MBR,
+    suggestedParams
+  });
+
+  // txn[1]: AssetTransfer — FRY tokens to contract
+  const assetTransferTxn = algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
+    sender,
+    receiver: appAddress,
+    amount: fryAmount,
+    assetIndex: FRY_ASA_ID,
+    suggestedParams
+  });
+
+  // txn[2]: AppCall — cast_vote(byte[32],uint8,pay,axfer)void
+  const methodSelector = getMethodSelector('cast_vote(byte[32],uint8,pay,axfer)void');
+  const appTxn = algosdk.makeApplicationCallTxnFromObject({
+    sender,
+    suggestedParams,
+    appIndex: GOVERNANCE_APP_ID,
+    appArgs: [methodSelector, voteId, new Uint8Array([optionIndex])],
+    foreignAssets: [FRY_ASA_ID],
+    boxes: [
+      { appIndex: GOVERNANCE_APP_ID, name: voteBoxName },
+      { appIndex: GOVERNANCE_APP_ID, name: stakeBoxKey }
+    ],
+    onComplete: algosdk.OnApplicationComplete.NoOpOC
+  });
+
+  algosdk.assignGroupID([payTxn, assetTransferTxn, appTxn]);
+  return [payTxn, assetTransferTxn, appTxn];
+}
+
+/**
+ * Build withdraw transaction — self-service after lock expires.
+ * Single AppCall, no group needed.
+ */
+export async function buildWithdraw(
+  sender: string,
+  voteId: Uint8Array
+): Promise<algosdk.Transaction> {
+  const baseUrl = typeof window !== 'undefined'
+    ? window.location.origin
+    : 'http://127.0.0.1:3012';
+  const suggestedParams = await fetchFreshSuggestedParams(baseUrl);
+
+  const stakeBoxKey = await computeStakeBoxKey(voteId, sender);
+  const voteBoxName = concatBytes(VOTE_BOX_PREFIX, voteId);
+  const methodSelector = getMethodSelector('withdraw(byte[32])void');
+
+  return algosdk.makeApplicationCallTxnFromObject({
+    sender,
+    suggestedParams,
+    appIndex: GOVERNANCE_APP_ID,
+    appArgs: [methodSelector, voteId],
+    foreignAssets: [FRY_ASA_ID],
+    boxes: [
+      { appIndex: GOVERNANCE_APP_ID, name: voteBoxName },
+      { appIndex: GOVERNANCE_APP_ID, name: stakeBoxKey }
+    ],
+    onComplete: algosdk.OnApplicationComplete.NoOpOC
+  });
+}
+
+/**
+ * Read official vote tallies from the contract vote box.
+ */
+export async function getOfficialVoteStatus(
+  voteId: Uint8Array
+): Promise<{
+  endDate: number;
+  lockDuration: number;
+  closed: boolean;
+  optionsCount: number;
+  totalTokens: bigint[];
+  totalVoters: bigint[];
+} | null> {
+  const baseUrl = typeof window !== 'undefined'
+    ? window.location.origin
+    : 'http://127.0.0.1:3012';
+  try {
+    const boxName = concatBytes(VOTE_BOX_PREFIX, voteId);
+    const b64Name = btoa(String.fromCharCode.apply(null, Array.from(boxName) as number[]));
+    const res = await fetch(
+      `${baseUrl}/api/algod/v2/applications/${GOVERNANCE_APP_ID}/box?name=b64:${encodeURIComponent(b64Name)}`,
+      { cache: 'no-store' }
+    );
+    if (!res.ok) return null;
+    const json = await res.json();
+    const data = Uint8Array.from(atob(json.value), c => c.charCodeAt(0));
+    const view = new DataView(data.buffer, data.byteOffset);
+
+    // VoteRecord layout (220 bytes):
+    // vote_id(0-31), options_count(32), end_date(33-40), lock_duration(41-48),
+    // super_majority(49), vote_type(50), closed(51), created_by(52-83),
+    // created_at(84-91), total_tokens[8](92-155), total_voters[8](156-219)
+    const optionsCount = data[32];
+    const endDate = Number(view.getBigUint64(33, false));
+    const lockDuration = Number(view.getBigUint64(41, false));
+    const closed = data[51] === 1;
+    const totalTokens: bigint[] = [];
+    const totalVoters: bigint[] = [];
+    for (let i = 0; i < 8; i++) {
+      totalTokens.push(view.getBigUint64(92 + i * 8, false));
+      totalVoters.push(view.getBigUint64(156 + i * 8, false));
+    }
+    return { endDate, lockDuration, closed, optionsCount, totalTokens, totalVoters };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Check if a user has voted in an official vote.
+ * Returns stake info if voted, null if not.
+ */
+export async function hasUserVotedOfficial(
+  voteId: Uint8Array,
+  userAddress: string
+): Promise<{ optionIndex: number; tokenAmount: bigint; withdrawn: boolean } | null> {
+  const baseUrl = typeof window !== 'undefined'
+    ? window.location.origin
+    : 'http://127.0.0.1:3012';
+  try {
+    const stakeBoxKey = await computeStakeBoxKey(voteId, userAddress);
+    const b64Name = btoa(String.fromCharCode.apply(null, Array.from(stakeBoxKey) as number[]));
+    const res = await fetch(
+      `${baseUrl}/api/algod/v2/applications/${GOVERNANCE_APP_ID}/box?name=b64:${encodeURIComponent(b64Name)}`,
+      { cache: 'no-store' }
+    );
+    if (!res.ok) return null;
+    const json = await res.json();
+    const data = Uint8Array.from(atob(json.value), c => c.charCodeAt(0));
+    const view = new DataView(data.buffer, data.byteOffset);
+    // StakeRecord: voter(0-31), vote_id(32-63), option_index(64),
+    //              token_amount(65-72), timestamp(73-80), withdrawn(81)
+    const optionIndex = data[64];
+    const tokenAmount = view.getBigUint64(65, false);
+    const withdrawn = data[81] === 1;
+    return { optionIndex, tokenAmount, withdrawn };
+  } catch {
+    return null;
   }
 }
 

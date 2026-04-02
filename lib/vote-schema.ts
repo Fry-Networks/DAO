@@ -47,6 +47,7 @@ export interface Vote extends mongoose.Document {
   authorWallet?: string;
   comments?: Comment[];
   editedAt?: string;
+  contractVoteId?: string;  // Hex of makeVoteId(title) — presence = contract flow
 }
 
 export const voteSchema = new mongoose.Schema({
@@ -89,5 +90,6 @@ export const voteSchema = new mongoose.Schema({
       createdAt: String
     }
   ],
-  editedAt: String
+  editedAt: String,
+  contractVoteId: { type: String }
 });

@@ -1,9 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import algosdk from 'algosdk';
 import clientPromise from '../../lib/mongoclient';
+// Server-side algod: use DAO app's internal proxy (ATLAS00 primary, Nodely fallback)
 const algodClient = new algosdk.Algodv2(
   '',
-  'https://mainnet-api.algonode.cloud',
+  'http://127.0.0.1:3012/api/algod',
   ''
 );
 const BURN_ADDRESS =

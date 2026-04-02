@@ -15,12 +15,8 @@ import { set } from 'mongoose';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
 import { Price } from '../lib/price-schema';
 import { sanitizeHtml } from '../lib/sanitize-html';
+import { fetchFreshSuggestedParams } from '../lib/governance-client';
 
-const algodClient = new algosdk.Algodv2(
-  '',
-  'https://mainnet-api.algonode.cloud',
-  ''
-);
 const BURN_ADDRESS =
   'CM3FF3D3PNCZYD62A7LT6WWG4OBX2JAGVCDRRZRM373SUM6HNR4TFNKYYM';
 const FRYIndex = 2485314946;
@@ -58,7 +54,8 @@ export default function ModalVote({
         throw new Error('Missing transaction params.');
       }
 
-      const suggestedParams = await algodClient.getTransactionParams().do();
+      const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://127.0.0.1:3012';
+      const suggestedParams = await fetchFreshSuggestedParams(baseUrl);
       const transaction =
         algosdk.makeAssetTransferTxnWithSuggestedParamsFromObject({
           sender: from,

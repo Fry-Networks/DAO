@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { Stake } from '../../lib/stake-schema';
 import clientPromise from '../../lib/mongoclient';
-import algosdk, { Indexer } from 'algosdk';
+import algosdk from 'algosdk';
 
 const calculateTimeLeft = (stake: Stake) => {
   const testMode = process.env.NEXT_PUBLIC_TEST === 'true' ? true : false;
@@ -20,19 +20,19 @@ const calculateTimeLeft = (stake: Stake) => {
   return goalTime.getTime() - now.getTime();
 };
 
+// Server-side algod: use DAO app's internal proxy (ATLAS00 primary, Nodely fallback)
 const algodClient = new algosdk.Algodv2(
   '',
-  'https://mainnet-api.algonode.cloud',
+  'http://127.0.0.1:3012/api/algod',
   ''
 );
 
-const indexServer = 'https://mainnet-idx.algonode.cloud/';
-const token = '';
-const port = 443;
-const tokenToSend = {
-  'X-API-Key': token
-};
-const indexer = new Indexer(tokenToSend, indexServer, port);
+// Indexer: Nodely (algonode deprecated)
+const indexer = new algosdk.Indexer(
+  '',
+  'https://mainnet-idx.4160.nodely.dev',
+  ''
+);
 
 const FRYIndex = 2485314946;
 

@@ -11,6 +11,7 @@ import { Vote } from '../lib/vote-schema';
 import clientPromise from '../lib/mongoclient';
 import { useState } from 'react';
 import ModalVote from '../components/vote';
+import CastVoteModal from '../components/cast-vote-modal';
 import { Dialog } from '@tremor/react';
 import { useWallet } from '../lib/use-wallet-compat';
 import { marked } from 'marked';
@@ -133,20 +134,36 @@ export default function VotePage({
                           >
                             Vote
                           </Button>
-                          <ModalVote
-                            key={index}
-                            isOpen={openModalId === voteKey}
-                            setIsOpen={handleCloseModal}
-                            vote={{
-                              vote_index: voteIdx,
-                              index: index,
-                              title: vote.title,
-                              description: option.description,
-                              optionTitle: option.title
-                            }}
-                            price={price}
-                            priceValue={priceValue}
-                          />
+                          {vote.contractVoteId ? (
+                            <CastVoteModal
+                              key={`contract-${index}`}
+                              isOpen={openModalId === voteKey}
+                              setIsOpen={(open: boolean) => !open && handleCloseModal(index)}
+                              vote={{
+                                contractVoteId: vote.contractVoteId,
+                                title: vote.title,
+                                description: option.description,
+                                optionTitle: option.title,
+                                optionIndex: index
+                              }}
+                              onSuccess={() => window.location.reload()}
+                            />
+                          ) : (
+                            <ModalVote
+                              key={index}
+                              isOpen={openModalId === voteKey}
+                              setIsOpen={handleCloseModal}
+                              vote={{
+                                vote_index: voteIdx,
+                                index: index,
+                                title: vote.title,
+                                description: option.description,
+                                optionTitle: option.title
+                              }}
+                              price={price}
+                              priceValue={priceValue}
+                            />
+                          )}
                         </Flex>
                       </Card>
                     );
@@ -246,6 +263,7 @@ export async function getServerSideProps(context: any) {
             super_majority: vote.super_majority,
             end_date: vote.end_date,
             hidden: vote.hidden,
+            contractVoteId: vote.contractVoteId,
             votes: vote.votes.map((vote_option) => {
               return {
                 title: vote_option.title,
