@@ -21,6 +21,16 @@ let atlas00Healthy = true;
 let lastFreshnessCheck = 0;
 
 /**
+ * Set headers to prevent caching by CDN and browsers.
+ * Algod data (rounds, balances, params) must always be fresh.
+ */
+function setNoCacheHeaders(res: NextApiResponse): void {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+}
+
+/**
  * Fetch /v2/status using http module (bypasses fetch's port blocking).
  */
 function fetchStatus(url: string, token: string): Promise<{ lastRound: number } | null> {
@@ -157,6 +167,9 @@ function httpRequest(url: string, method: string, headers: Record<string, string
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  // Prevent CDN and browser caching of all algod responses
+  setNoCacheHeaders(res);
+
   const pathSegments = req.query.path;
   const path = '/' + (Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments || '');
   const queryString = req.url?.includes('?') ? req.url.split('?')[1] : '';
