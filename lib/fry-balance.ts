@@ -1,14 +1,12 @@
 import algosdk from 'algosdk';
 
 const FRY_ASA_ID = 2485314946;
-const USD_THRESHOLD = 50; // $50 USD minimum
+const USD_THRESHOLD = 50;
 const VESTIGE_API = 'https://api.vestigelabs.org/assets/price?asset_ids=2485314946';
 
-// Algod endpoints with fallback
-const ALGOD_PRIMARY = { url: 'http://192.168.9.2:4190', token: '' };   // ATLAS00
-const ALGOD_FALLBACK = { url: 'https://mainnet-api.4160.nodely.dev', token: '' }; // Nodely
+// Use Nodely for balance checks (algosdk uses fetch which blocks non-standard ports)
+const ALGOD_URL = 'https://mainnet-api.4160.nodely.dev';
 
-// Cache FRY price for 5 minutes
 let priceCache = { price: 0, fetchedAt: 0 };
 
 async function getFryPrice(): Promise<number> {
@@ -25,27 +23,8 @@ async function getFryPrice(): Promise<number> {
   return price;
 }
 
-/**
- * Get algod client with fallback logic.
- * Tries ATLAS00 first, falls back to Nodely on failure.
- */
-async function getAlgodClient(): Promise<algosdk.Algodv2> {
-  const primary = new algosdk.Algodv2(ALGOD_PRIMARY.token, ALGOD_PRIMARY.url, '');
-  
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
-    const response = await fetch(`${ALGOD_PRIMARY.url}/health`, { signal: controller.signal });
-    clearTimeout(timeout);
-    if (response.ok) {
-      return primary;
-    }
-  } catch {
-    // Fall through to fallback
-  }
-  
-  console.log('ATLAS00 algod unavailable, falling back to Nodely');
-  return new algosdk.Algodv2(ALGOD_FALLBACK.token, ALGOD_FALLBACK.url, '');
+function getAlgodClient(): algosdk.Algodv2 {
+  return new algosdk.Algodv2('', ALGOD_URL, '');
 }
 
 export interface FryBalanceResult {
@@ -58,19 +37,16 @@ export interface FryBalanceResult {
 
 export async function checkFryBalance(address: string): Promise<FryBalanceResult> {
   const fryPrice = await getFryPrice();
-  const requiredFry = Math.ceil((USD_THRESHOLD / fryPrice) * 1e6); // 6 decimals
+  const requiredFry = Math.ceil((USD_THRESHOLD / fryPrice) * 1e6);
   
-  const algod = await getAlgodClient();
+  const algod = getAlgodClient();
   const accountInfo = await algod.accountInformation(address).do();
   
-  // algosdk v3 uses camelCase field names (assetId) and returns bigint/string
-  // Support both formats for safety
   const fryAsset = accountInfo.assets?.find((a: any) => {
     const id = a.assetId ?? a['asset-id'];
     return Number(id) === FRY_ASA_ID || BigInt(id) === BigInt(FRY_ASA_ID);
   });
   
-  // Convert bigint/string amount to number
   const balance = Number(fryAsset?.amount ?? 0);
   
   return {

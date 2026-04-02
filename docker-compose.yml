@@ -6,8 +6,7 @@ services:
     image: dao:prod
     container_name: dao
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:3012:3012"
+    network_mode: host
     environment:
       NODE_ENV: production
       NODE_OPTIONS: "--disable-warning=DEP0060"
@@ -22,6 +21,7 @@ services:
       NEXTAUTH_SECRET: "op://DAO/Discord OAuth Governance/NEXTAUTH_SECRET"
       DISCORD_CLIENT_ID: "op://DAO/Discord OAuth Governance/Client ID"
       DISCORD_CLIENT_SECRET: "op://DAO/Discord OAuth Governance/Client Secret"
+      ALGOD_TOKEN: "${ALGOD_TOKEN:-}"
     command: ["npm", "start"]
     healthcheck:
       test:

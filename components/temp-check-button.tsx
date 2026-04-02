@@ -18,7 +18,7 @@ interface TempCheckButtonProps {
 }
 
 export default function TempCheckButton({ cfipId, cfipTitle, onSuccess }: TempCheckButtonProps) {
-  const { activeAddress, signTransactions, sendTransactions } = useWallet();
+  const { activeAddress, signTransactions } = useWallet();
   const [isOpen, setIsOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +61,10 @@ export default function TempCheckButton({ cfipId, cfipTitle, onSuccess }: TempCh
       const signedTxns = await signTransactions(encodedTxns);
 
       // Submit
-      const { id } = await sendTransactions(signedTxns, 4);
+      const txnsToSend = signedTxns.filter((t): t is Uint8Array => t !== null);
+      const { txid } = await algod.sendRawTransaction(txnsToSend).do();
+      await algosdk.waitForConfirmation(algod, txid, 4);
+      const id = txid;
       console.log('Temp check created, txId:', id);
 
       setSuccess(true);

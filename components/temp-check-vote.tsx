@@ -26,7 +26,7 @@ interface TempCheckData {
 }
 
 export default function TempCheckVote({ cfipId, onVoteSuccess }: TempCheckVoteProps) {
-  const { activeAddress, signTransactions, sendTransactions } = useWallet();
+  const { activeAddress, signTransactions } = useWallet();
   const [data, setData] = useState<TempCheckData | null>(null);
   const [loading, setLoading] = useState(true);
   const [voting, setVoting] = useState(false);
@@ -97,7 +97,10 @@ export default function TempCheckVote({ cfipId, onVoteSuccess }: TempCheckVotePr
       const signedTxns = await signTransactions(encodedTxns);
 
       // Submit
-      const { id } = await sendTransactions(signedTxns, 4);
+      const txnsToSend = signedTxns.filter((t): t is Uint8Array => t !== null);
+      const { txid } = await algod.sendRawTransaction(txnsToSend).do();
+      await algosdk.waitForConfirmation(algod, txid, 4);
+      const id = txid;
       console.log('Vote cast, txId:', id);
 
       setSuccess(`Vote recorded! Transaction: ${id.substring(0, 8)}...`);
