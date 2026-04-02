@@ -6,6 +6,8 @@ const ALGOD_FALLBACK = 'https://mainnet-api.4160.nodely.dev';
 
 // Allowlist of safe paths
 const ALLOWED_GET_PATHS = [
+  /^\/v2\/transactions\/pending\//,
+  /^\/v2\/status\/wait-for-block-after\//,
   /^\/v2\/applications\//,
   /^\/v2\/accounts\//,
   /^\/v2\/transactions\/params$/,
