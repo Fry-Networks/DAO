@@ -89,7 +89,7 @@ export default function TempCheckButton({ cfipId, cfipTitle, onSuccess }: TempCh
         color="amber"
         icon={RiTimeLine}
         onClick={() => setIsOpen(true)}
-        disabled={!activeAddress}
+        
       >
         Request Temp Check
       </Button>

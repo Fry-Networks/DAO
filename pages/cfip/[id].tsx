@@ -79,7 +79,7 @@ export default function CfipDetailPage({ cfip }: { cfip: CfipData | null }) {
   const isAuthor = session?.user && (session.user as any).discordId === cfip.author.discordId;
   const canEdit = isAuthor && (cfip.status === 'discussion' || cfip.status === 'draft');
   const canComment = cfip.status === 'discussion' || cfip.status === 'draft';
-  const canRequestTempCheck = isAuthor && cfip.status === 'discussion' && activeAddress;
+  const canRequestTempCheck = isAuthor && cfip.status === 'discussion';
 
   const submitComment = async () => {
     if (!session || !commentText.trim()) return;
