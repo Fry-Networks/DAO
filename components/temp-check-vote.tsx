@@ -3,7 +3,6 @@ import { Button, Card, Callout, Flex, ProgressBar, Text, Title } from '@tremor/r
 import { RiCheckLine, RiCloseLine, RiTimeLine } from '@remixicon/react';
 import algosdk from 'algosdk';
 import { useWallet } from '../lib/use-wallet-compat';
-import { checkFryBalance } from '../lib/fry-balance';
 import {
   buildCastTempVote,
   getAlgodClient,
@@ -78,7 +77,11 @@ export default function TempCheckVote({ cfipId, onVoteSuccess }: TempCheckVotePr
 
     try {
       // Check FRY balance eligibility
-      const balanceResult = await checkFryBalance(activeAddress);
+      const balanceResponse = await fetch(`/api/cfip/check-balance?address=${activeAddress}`);
+      if (!balanceResponse.ok) {
+        throw new Error('Failed to check FRY balance');
+      }
+      const balanceResult = await balanceResponse.json();
       if (!balanceResult.eligible) {
         setError(`Insufficient FRY balance. You need at least ${balanceResult.required.toFixed(2)} FRY.`);
         setVoting(false);

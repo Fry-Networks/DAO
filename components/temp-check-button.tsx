@@ -3,7 +3,6 @@ import { Button, Callout, Dialog, DialogPanel, Divider, Text, Title } from '@tre
 import { RiTimeLine, RiCloseLine } from '@remixicon/react';
 import algosdk from 'algosdk';
 import { useWallet } from '../lib/use-wallet-compat';
-import { checkFryBalance } from '../lib/fry-balance';
 import {
   buildRequestTempCheck,
   getAlgodClient,
@@ -36,7 +35,11 @@ export default function TempCheckButton({ cfipId, cfipTitle, onSuccess }: TempCh
 
     try {
       // Check FRY balance eligibility
-      const balanceResult = await checkFryBalance(activeAddress);
+      const balanceResponse = await fetch(`/api/cfip/check-balance?address=${activeAddress}`);
+      if (!balanceResponse.ok) {
+        throw new Error('Failed to check FRY balance');
+      }
+      const balanceResult = await balanceResponse.json();
       if (!balanceResult.eligible) {
         setError(`Insufficient FRY balance. You need at least ${balanceResult.required.toFixed(2)} FRY (~$${balanceResult.thresholdUsd} USD). You have ${balanceResult.balance.toFixed(2)} FRY.`);
         setIsProcessing(false);
