@@ -10,10 +10,6 @@ const VOTE_BOX_PREFIX = new Uint8Array([0x76]);  // "v"
 const STAKE_BOX_PREFIX = new Uint8Array([0x73]); // "s"
 const MAX_TEMP_CHECK_DURATION = 604800; // 7 days in seconds
 
-// Algod endpoints with fallback (same as fry-balance.ts)
-const ALGOD_PRIMARY = { url: 'http://192.168.9.2:4190', token: '' };
-const ALGOD_FALLBACK = { url: 'https://mainnet-api.4160.nodely.dev', token: '' };
-
 /**
  * Concatenate Uint8Arrays (works with older TypeScript targets).
  */
@@ -29,25 +25,11 @@ function concatBytes(...arrays: Uint8Array[]): Uint8Array {
 }
 
 /**
- * Get algod client with fallback logic.
+ * Get algod client using local proxy.
+ * The proxy handles ATLAS00 → Nodely fallback server-side.
  */
-export async function getAlgodClient(): Promise<algosdk.Algodv2> {
-  const primary = new algosdk.Algodv2(ALGOD_PRIMARY.token, ALGOD_PRIMARY.url, '');
-  
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 3000);
-    const response = await fetch(`${ALGOD_PRIMARY.url}/health`, { signal: controller.signal });
-    clearTimeout(timeout);
-    if (response.ok) {
-      return primary;
-    }
-  } catch {
-    // Fall through to fallback
-  }
-  
-  console.log('ATLAS00 algod unavailable, falling back to Nodely');
-  return new algosdk.Algodv2(ALGOD_FALLBACK.token, ALGOD_FALLBACK.url, '');
+export function getAlgodClient(): algosdk.Algodv2 {
+  return new algosdk.Algodv2('', '/api/algod', '');
 }
 
 /**
