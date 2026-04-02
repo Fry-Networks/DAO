@@ -1,12 +1,13 @@
 'use client';
 
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Disclosure, Menu, Transition } from '@headlessui/react';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, ClipboardIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { useSession, signIn, signOut } from 'next-auth/react';
 import ThemeToggle, { useTheme } from '../components/theme-toggle';
 import { logoLight, logoDark } from '../components/logos';
+import { useWallet } from '../lib/use-wallet-compat';
 
 const navigation = [
   { name: 'Home', href: '/' },
@@ -21,10 +22,30 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(' ');
 }
 
+const truncateAddress = (addr: string) => 
+  addr ? `${addr.slice(0, 4)}...${addr.slice(-4)}` : '';
+
 export default function Navbar() {
   const pathname = usePathname();
   const isDark = useTheme();
   const { data: session, status } = useSession();
+  const { providers, activeAddress } = useWallet();
+  const [copied, setCopied] = useState(false);
+
+  const copyAddress = () => {
+    if (activeAddress) {
+      navigator.clipboard.writeText(activeAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const handleDisconnect = () => {
+    const connectedProvider = providers?.find(p => p.isConnected);
+    if (connectedProvider) {
+      connectedProvider.disconnect();
+    }
+  };
 
   return (
     <Disclosure as="nav" className="bg-[var(--bg-secondary)] border-b border-[var(--border-color)]">
@@ -82,6 +103,9 @@ export default function Navbar() {
                         </div>
                       )}
                       <span className="hidden lg:block">{session.user?.name}</span>
+                      {activeAddress && (
+                        <span className="hidden lg:block text-xs text-emerald-400 ml-1">●</span>
+                      )}
                     </Menu.Button>
                     <Transition
                       as={Fragment}
@@ -92,13 +116,65 @@ export default function Navbar() {
                       leaveFrom="transform opacity-100 scale-100"
                       leaveTo="transform opacity-0 scale-95"
                     >
-                      <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] shadow-lg focus:outline-none">
+                      <Menu.Items className="absolute right-0 z-10 mt-2 w-64 origin-top-right rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] shadow-lg focus:outline-none">
+                        {/* Discord identity */}
                         <div className="px-4 py-3 border-b border-[var(--border-color)]">
                           <p className="text-sm text-[var(--text-secondary)]">Signed in as</p>
                           <p className="text-sm font-medium text-[var(--text-primary)] truncate">
                             {session.user?.name}
                           </p>
                         </div>
+                        
+                        {/* Wallet section */}
+                        <div className="px-4 py-3 border-b border-[var(--border-color)]">
+                          {activeAddress ? (
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-[var(--text-secondary)]">Wallet</span>
+                                <div className="flex items-center gap-1">
+                                  <code className="text-sm text-emerald-400 font-mono">{truncateAddress(activeAddress)}</code>
+                                  <button 
+                                    onClick={copyAddress} 
+                                    className="p-1 rounded hover:bg-[var(--bg-secondary)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors"
+                                    title="Copy address"
+                                  >
+                                    {copied ? (
+                                      <CheckIcon className="h-4 w-4 text-emerald-400" />
+                                    ) : (
+                                      <ClipboardIcon className="h-4 w-4" />
+                                    )}
+                                  </button>
+                                </div>
+                              </div>
+                              <button 
+                                onClick={handleDisconnect}
+                                className="w-full text-left text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] px-2 py-1.5 rounded transition-colors"
+                              >
+                                Disconnect Wallet
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="space-y-2">
+                              <p className="text-sm text-[var(--text-secondary)]">Wallet: Not connected</p>
+                              {providers?.map(provider => (
+                                <button 
+                                  key={provider.metadata.id}
+                                  onClick={() => provider.connect()}
+                                  className="w-full flex items-center gap-2 text-sm text-[var(--text-primary)] hover:bg-[var(--bg-secondary)] px-2 py-1.5 rounded transition-colors"
+                                >
+                                  <img 
+                                    src={provider.metadata.icon} 
+                                    alt="" 
+                                    className="h-4 w-4 rounded"
+                                  />
+                                  Connect {provider.metadata.name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Sign out */}
                         <div className="py-1">
                           <Menu.Item>
                             {({ active }) => (
@@ -186,6 +262,44 @@ export default function Navbar() {
                       </p>
                     </div>
                   </div>
+                  
+                  {/* Mobile wallet section */}
+                  <div className="rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] p-3">
+                    {activeAddress ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-[var(--text-secondary)]">Wallet</span>
+                          <code className="text-sm text-emerald-400 font-mono">{truncateAddress(activeAddress)}</code>
+                        </div>
+                        <button 
+                          onClick={handleDisconnect}
+                          className="w-full text-center text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] py-1.5 rounded border border-[var(--border-color)] transition-colors"
+                        >
+                          Disconnect
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <p className="text-sm text-[var(--text-secondary)]">Wallet: Not connected</p>
+                        {providers?.map(provider => (
+                          <Disclosure.Button 
+                            key={provider.metadata.id}
+                            as="button"
+                            onClick={() => provider.connect()}
+                            className="w-full flex items-center justify-center gap-2 text-sm text-[var(--text-primary)] bg-[var(--bg-secondary)] hover:bg-[var(--border-color)] px-3 py-2 rounded transition-colors"
+                          >
+                            <img 
+                              src={provider.metadata.icon} 
+                              alt="" 
+                              className="h-4 w-4 rounded"
+                            />
+                            {provider.metadata.name}
+                          </Disclosure.Button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  
                   <Disclosure.Button
                     as="button"
                     onClick={() => signOut()}
