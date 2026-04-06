@@ -37,7 +37,7 @@ export default function CfipListPage({ cfips }: { cfips: CfipSummary[] }) {
 
   return (
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
-      <Flex justifyContent="between" alignItems="center" className="mb-6">
+      <Flex justifyContent="between" alignItems="center" className="mb-4">
         <Title className="text-[var(--text-heading)]">Community Proposals (cFIP)</Title>
         {session && (
           <Link href="/cfip/new">
@@ -45,6 +45,12 @@ export default function CfipListPage({ cfips }: { cfips: CfipSummary[] }) {
           </Link>
         )}
       </Flex>
+
+      <Text className="text-[var(--text-secondary)] mb-6 max-w-3xl">
+        Community FIPs (cFIPs) let any eligible FRY holder propose changes to the network. 
+        Submit a proposal, discuss with the community, and if approved through founder review, 
+        it advances to a full on-chain vote.
+      </Text>
 
       <TabGroup index={filter} onIndexChange={setFilter} className="mb-6">
         <TabList variant="solid">

@@ -12,9 +12,7 @@ import { useWallet } from '../lib/use-wallet-compat';
 const navigation = [
   { name: 'Home', href: '/' },
   { name: 'cFIP', href: '/cfip' },
-  { name: 'Vote', href: '/vote' },
-  { name: 'Last Vote', href: '/lastvote' },
-  { name: 'All Votes', href: '/allvotes' },
+  { name: 'Votes', href: '/votes' },
   { name: 'Stats', href: '/stats' },
   { name: 'My Stakes', href: '/stakes' }
 ];
