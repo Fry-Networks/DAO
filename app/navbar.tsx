@@ -15,6 +15,7 @@ const navigation = [
   { name: 'Vote', href: '/vote' },
   { name: 'Last Vote', href: '/lastvote' },
   { name: 'All Votes', href: '/allvotes' },
+  { name: 'Stats', href: '/stats' },
   { name: 'My Stakes', href: '/stakes' }
 ];
 
