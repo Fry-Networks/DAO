@@ -1,21 +1,28 @@
-import { Callout, Flex } from '@tremor/react';
-import clientPromise from '../lib/mongoclient';
-import { Stake } from '../lib/stake-schema';
-import { Vote } from '../lib/vote-schema';
+import { Callout, Flex, Title } from '@tremor/react';
 import { useWallet } from '../lib/use-wallet-compat';
 import { useEffect, useState } from 'react';
 import StakeItem from '../components/stake';
+import ContractStakeItem from '../components/contract-stake';
+import { Stake } from '../lib/stake-schema';
 import { CheckCircleIcon } from '@heroicons/react/24/outline';
+
+interface V2Vote {
+  _id: string;
+  title: string;
+  contractVoteId: string;
+  end_date: string;
+}
 
 export default function StakePage() {
   const { activeAccount } = useWallet();
   const [stakes, setStakes] = useState<Stake[] | undefined>(undefined);
+  const [v2Votes, setV2Votes] = useState<V2Vote[]>([]);
   const [updateSuccess, setUpdateSuccess] = useState<{
     success: boolean;
     message: string;
   }>({ success: false, message: '' });
-  const testMode = process.env.NEXT_PUBLIC_TEST === 'true' ? true : false;
 
+  // Fetch V1 legacy stakes
   useEffect(() => {
     const fetchStakes = async () => {
       if (activeAccount) {
@@ -42,12 +49,38 @@ export default function StakePage() {
     fetchStakes();
   }, [activeAccount]);
 
+  // Fetch V2 votes (contract-based)
+  useEffect(() => {
+    const fetchV2Votes = async () => {
+      if (!activeAccount) {
+        setV2Votes([]);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/get-v2-votes');
+        if (response.ok) {
+          const result = await response.json();
+          setV2Votes(result.data || []);
+        }
+      } catch (err) {
+        console.error('Error fetching V2 votes:', err);
+      }
+    };
+
+    fetchV2Votes();
+  }, [activeAccount]);
+
   function handleMessage(success: boolean, message: string) {
     setUpdateSuccess({ success: success, message: message });
     setTimeout(() => {
       setUpdateSuccess({ success: false, message: '' });
     }, 1_500);
   }
+
+  const handleV2Withdraw = () => {
+    handleMessage(true, 'Successfully withdrew FRY from contract');
+  };
 
   return (
     <main className="p-4 md:p-10 mx-auto max-w-7xl">
@@ -72,12 +105,29 @@ export default function StakePage() {
         </Callout>
       )}
       {activeAccount ? (
-        <Flex flexDirection="col" className="w-full gap-2">
-          {stakes &&
-            stakes.map((stake, index) => {
-              return <StakeItem key={index} stake={stake} handleMessage={handleMessage} />;
-            })}
-        </Flex>
+        <>
+          {/* V2 Contract Stakes */}
+          {v2Votes.length > 0 && (
+            <Flex flexDirection="col" className="w-full gap-2 mb-6">
+              {v2Votes.map((vote) => (
+                <ContractStakeItem
+                  key={vote._id}
+                  vote={vote}
+                  walletAddress={activeAccount.address}
+                  onWithdraw={handleV2Withdraw}
+                />
+              ))}
+            </Flex>
+          )}
+
+          {/* V1 Legacy Stakes */}
+          <Flex flexDirection="col" className="w-full gap-2">
+            {stakes &&
+              stakes.map((stake, index) => {
+                return <StakeItem key={index} stake={stake} handleMessage={handleMessage} />;
+              })}
+          </Flex>
+        </>
       ) : (
         <p className="text-[var(--text-secondary)] mt-4">
           You need to connect your wallet to check staking information!
