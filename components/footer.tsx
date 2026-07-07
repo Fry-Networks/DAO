@@ -100,7 +100,7 @@ export default function Footer() {
           </p>
           
           {/* Social Links */}
-          <div className="flex items-center justify-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             {socialLinks.map((item) => (
               <a
                 key={item.name}

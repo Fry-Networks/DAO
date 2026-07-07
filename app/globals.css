@@ -144,3 +144,12 @@ body {
 .markdown-content a:hover {
   text-decoration: underline;
 }
+
+/* QA 2026-07-07: prevent horizontal overflow of proposal markdown on narrow viewports */
+.markdown-content {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.markdown-content pre {
+  overflow-x: auto;
+}

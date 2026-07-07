@@ -73,12 +73,12 @@ export default function CfipListPage({ cfips }: { cfips: CfipSummary[] }) {
             <Link key={cfip.id} href={`/cfip/${cfip.id}`}>
               <Card className="bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[#e74c3c] transition-colors cursor-pointer">
                 <Flex justifyContent="between" alignItems="start">
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <Flex alignItems="center" className="gap-2 mb-2">
-                      <Title className="text-[var(--text-heading)]">{cfip.title}</Title>
+                      <Title className="text-[var(--text-heading)] break-words">{cfip.title}</Title>
                       <Badge color={statusColors[cfip.status]}>{cfip.status}</Badge>
                     </Flex>
-                    <Text className="text-[var(--text-secondary)] mb-3">{cfip.description}</Text>
+                    <Text className="text-[var(--text-secondary)] mb-3 break-words">{cfip.description}</Text>
                     <Flex className="gap-4 text-sm text-[var(--text-secondary)]">
                       <span className="flex items-center gap-1">
                         {cfip.author.image && (
