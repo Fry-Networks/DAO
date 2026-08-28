@@ -20,7 +20,7 @@ const calculateTimeLeft = (stake: Stake) => {
   return goalTime.getTime() - now.getTime();
 };
 
-// Server-side algod: use DAO app's internal proxy (ATLAS00 primary, Nodely fallback)
+// Server-side algod: use DAO app's internal proxy (primary node, Nodely fallback)
 const algodClient = new algosdk.Algodv2(
   '',
   'http://127.0.0.1:3012/api/algod',

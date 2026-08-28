@@ -26,7 +26,7 @@ function concatBytes(...arrays: Uint8Array[]): Uint8Array {
 
 /**
  * Get algod client using local proxy.
- * The proxy handles ATLAS00 → Nodely fallback server-side.
+ * The proxy handles primary algod node → Nodely fallback server-side.
  */
 export function getAlgodClient(): algosdk.Algodv2 {
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3012';
